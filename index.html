@@ -415,8 +415,8 @@
                 setTimeout(() => {
                     loadingScreen.style.display = 'none';
                     document.getElementById('app-content').style.display = 'block';
-                }, 0); // Время для fade-out анимации
-            }, 1500); // Общее время загрузки - 1 секунда
+                }, 300); // Время для fade-out анимации
+            }, 1000); // Общее время загрузки - 1 секунда
 
             if (window.Telegram?.WebApp) {
                 initTelegramApp();
