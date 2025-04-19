@@ -1,2 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата курса</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .payment-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 400px;
+            text-align: center;
+        }
+        .product-name {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .amount {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+        .pay-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .pay-button:hover {
+            background-color: #2980b9;
+        }
+        .promo-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .promo-input {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .promo-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+        }
+        .promo-input button {
+            padding: 10px 15px;
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: not-allowed;
+            font-size: 16px;
+        }
+        .promo-input button.active {
+            background-color: #2ecc71;
+            cursor: pointer;
+        }
+        .promo-input button.active:hover {
+            background-color: #27ae60;
+        }
+        .promo-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .promo-link:hover {
+            text-decoration: underline;
+        }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .error {
+            background-color: #fadbd8;
+            color: #c0392b;
+        }
+        .success {
+            background-color: #d5f5e3;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="product-name">Онлайн-курс по программированию</div>
+        <div class="amount" id="amount">2 900 ₽</div>
+        
+        <button class="pay-button">Оплатить</button>
+        
+        <a class="promo-link" id="promo-link">У меня есть промокод</a>
+        
+        <div class="promo-container" id="promo-container">
+            <div class="promo-input">
+                <input type="text" id="promo-code" placeholder="Введите промокод">
+                <button id="apply-button">Применить</button>
+            </div>
+            <div class="message" id="message"></div>
+        </div>
+    </div>
 
-1
+    <script>
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMos6Y7C-krTLuKCI4VJG-TFLo6QI--k8",
+            authDomain: "vrot-x-7a48f.firebaseapp.com",
+            databaseURL: "https://vrot-x-7a48f-default-rtdb.firebaseio.com",
+            projectId: "vrot-x-7a48f",
+            storageBucket: "vrot-x-7a48f.appspot.com",
+            messagingSenderId: "622297225288",
+            appId: "1:622297225288:web:5df6a5b02ffddedd96e07d"
+        };
+
+        // Инициализируем Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Проверяем и создаем корень promo при необходимости
+        function checkAndCreatePromoRoot() {
+            const promoRef = database.ref('promo');
+            
+            promoRef.once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    // Создаем корень promo с тестовым промокодом
+                    const initialData = {
+                        test123: {
+                            activations: 0,
+                            amount: 1000
+                        }
+                    };
+                    
+                    promoRef.set(initialData).then(() => {
+                        console.log("Корень 'promo' создан с тестовым промокодом");
+                    }).catch((error) => {
+                        console.error("Ошибка при создании корня 'promo':", error);
+                    });
+                }
+            }).catch((error) => {
+                console.error("Ошибка при проверке корня 'promo':", error);
+            });
+        }
+
+        // Вызываем функцию при загрузке страницы
+        window.onload = checkAndCreatePromoRoot;
+
+        // DOM элементы
+        const promoLink = document.getElementById('promo-link');
+        const promoContainer = document.getElementById('promo-container');
+        const promoCodeInput = document.getElementById('promo-code');
+        const applyButton = document.getElementById('apply-button');
+        const amountElement = document.getElementById('amount');
+        const messageElement = document.getElementById('message');
+        
+        let originalAmount = 2900;
+        let currentAmount = originalAmount;
+
+        // Показываем/скрываем поле промокода
+        promoLink.addEventListener('click', () => {
+            if (promoContainer.style.display === 'block') {
+                promoContainer.style.display = 'none';
+                promoLink.textContent = 'У меня есть промокод';
+                
+                // Сбрасываем промокод
+                promoCodeInput.value = '';
+                applyButton.disabled = true;
+                applyButton.classList.remove('active');
+                messageElement.style.display = 'none';
+                
+                // Восстанавливаем оригинальную сумму
+                currentAmount = originalAmount;
+                updateAmountDisplay();
+            } else {
+                promoContainer.style.display = 'block';
+                promoLink.textContent = 'Скрыть промокод';
+            }
+        });
+
+        // Активация кнопки "Применить" при вводе промокода
+        promoCodeInput.addEventListener('input', () => {
+            if (promoCodeInput.value.trim().length > 0) {
+                applyButton.disabled = false;
+                applyButton.classList.add('active');
+            } else {
+                applyButton.disabled = true;
+                applyButton.classList.remove('active');
+            }
+        });
+
+        // Обработка нажатия кнопки "Применить"
+        applyButton.addEventListener('click', () => {
+            const promoCode = promoCodeInput.value.trim();
+            
+            if (promoCode === '') {
+                showMessage('Введите промокод', 'error');
+                return;
+            }
+            
+            checkPromoCode(promoCode);
+        });
+
+        // Проверка промокода в Firebase
+        function checkPromoCode(promoCode) {
+            const promoRef = database.ref('promo/' + promoCode);
+            
+            promoRef.once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    showMessage('Промокод не найден', 'error');
+                    return;
+                }
+                
+                const promoData = snapshot.val();
+                
+                if (promoData.activations <= 0) {
+                    showMessage('Промокод исчерпан по активациям', 'error');
+                    return;
+                }
+                
+                // Промокод действителен, применяем скидку
+                currentAmount = promoData.amount;
+                updateAmountDisplay();
+                showMessage('Промокод активирован', 'success');
+                
+                // Уменьшаем количество активаций (если нужно)
+                // promoRef.update({ activations: promoData.activations - 1 });
+                
+            }).catch((error) => {
+                console.error("Ошибка при проверке промокода:", error);
+                showMessage('Ошибка при проверке промокода', 'error');
+            });
+        }
+
+        // Обновление отображаемой суммы
+        function updateAmountDisplay() {
+            amountElement.textContent = currentAmount.toLocaleString('ru-RU') + ' ₽';
+        }
+
+        // Показать сообщение
+        function showMessage(text, type) {
+            messageElement.textContent = text;
+            messageElement.className = 'message ' + type;
+            messageElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
