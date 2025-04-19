@@ -8,121 +8,229 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f5f5f5;
-        }
-        .payment-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 400px;
-            text-align: center;
-        }
-        .product-name {
-            font-size: 24px;
-            margin-bottom: 10px;
+            background-color: #f8f9fa;
             color: #333;
         }
-        .amount {
-            font-size: 36px;
-            font-weight: bold;
-            margin: 20px 0;
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .receipt {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .receipt-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
             color: #2c3e50;
         }
-        .pay-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 15px 30px;
+        
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .receipt-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .item-name {
+            font-size: 16px;
+            color: #555;
+        }
+        
+        .item-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .divider {
+            height: 1px;
+            background: #eee;
+            margin: 20px 0;
+        }
+        
+        .total {
+            display: flex;
+            justify-content: space-between;
             font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-        .pay-button:hover {
-            background-color: #2980b9;
-        }
-        .promo-container {
+            font-weight: 700;
             margin-top: 20px;
+        }
+        
+        .promo-section {
+            margin-top: 25px;
             display: none;
         }
+        
         .promo-input {
             display: flex;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
+        
         .promo-input input {
-            flex-grow: 1;
-            padding: 10px;
+            flex: 1;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 5px 0 0 5px;
+            border-radius: 8px 0 0 8px;
             font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
         }
+        
+        .promo-input input:focus {
+            border-color: #3498db;
+        }
+        
         .promo-input button {
-            padding: 10px 15px;
+            padding: 0 20px;
             background-color: #95a5a6;
             color: white;
             border: none;
-            border-radius: 0 5px 5px 0;
+            border-radius: 0 8px 8px 0;
             cursor: not-allowed;
             font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
         }
+        
         .promo-input button.active {
-            background-color: #2ecc71;
+            background-color: #3498db;
             cursor: pointer;
         }
-        .promo-input button.active:hover {
-            background-color: #27ae60;
-        }
+        
         .promo-link {
             color: #3498db;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 15px;
+            transition: color 0.3s;
         }
+        
         .promo-link:hover {
-            text-decoration: underline;
+            color: #2980b9;
         }
-        .message {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
+        
+        .discount-item {
+            color: #27ae60;
             display: none;
         }
+        
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        
         .error {
             background-color: #fadbd8;
             color: #c0392b;
         }
+        
         .success {
             background-color: #d5f5e3;
             color: #27ae60;
         }
+        
+        .pay-button {
+            width: 100%;
+            padding: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        
+        .pay-button:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
-    <div class="payment-container">
-        <div class="product-name">Онлайн-курс по программированию</div>
-        <div class="amount" id="amount">2 900 ₽</div>
-        
-        <button class="pay-button">Оплатить</button>
-        
-        <a class="promo-link" id="promo-link">У меня есть промокод</a>
-        
-        <div class="promo-container" id="promo-container">
-            <div class="promo-input">
-                <input type="text" id="promo-code" placeholder="Введите промокод">
-                <button id="apply-button">Применить</button>
-            </div>
-            <div class="message" id="message"></div>
+    <div class="container">
+        <div class="header">
+            <h1>Полный доступ к курсу</h1>
         </div>
+        
+        <div class="receipt">
+            <div class="receipt-title">Ваш заказ</div>
+            
+            <div class="receipt-item">
+                <span class="item-name">Полный доступ к курсу</span>
+                <span class="item-price" id="base-price">2 900 ₽</span>
+            </div>
+            
+            <div class="receipt-item">
+                <span class="item-name">Доступ к видео-роликам</span>
+                <span class="item-price">0 ₽</span>
+            </div>
+            
+            <div class="receipt-item discount-item" id="discount-item">
+                <span class="item-name">Скидка по промокоду</span>
+                <span class="item-price" id="discount-amount">-900 ₽</span>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="total">
+                <span>Итого:</span>
+                <span id="total-amount">2 900 ₽</span>
+            </div>
+            
+            <div class="promo-section" id="promo-section">
+                <div class="promo-input">
+                    <input type="text" id="promo-code" placeholder="Введите промокод">
+                    <button id="apply-button">Применить</button>
+                </div>
+                <div class="message" id="message"></div>
+            </div>
+            
+            <a class="promo-link" id="promo-link">У меня есть промокод</a>
+        </div>
+        
+        <button class="pay-button">Перейти к оплате</button>
     </div>
 
     <script>
@@ -151,12 +259,16 @@
                     const initialData = {
                         test123: {
                             activations: 0,
-                            amount: 1000
+                            discount: 900
+                        },
+                        WELCOME: {
+                            activations: 100,
+                            discount: 500
                         }
                     };
                     
                     promoRef.set(initialData).then(() => {
-                        console.log("Корень 'promo' создан с тестовым промокодом");
+                        console.log("Корень 'promo' создан с тестовыми промокодами");
                     }).catch((error) => {
                         console.error("Ошибка при создании корня 'promo':", error);
                     });
@@ -167,23 +279,28 @@
         }
 
         // Вызываем функцию при загрузке страницы
-        window.onload = checkAndCreatePromoRoot;
+        document.addEventListener('DOMContentLoaded', checkAndCreatePromoRoot);
 
         // DOM элементы
         const promoLink = document.getElementById('promo-link');
-        const promoContainer = document.getElementById('promo-container');
+        const promoSection = document.getElementById('promo-section');
         const promoCodeInput = document.getElementById('promo-code');
         const applyButton = document.getElementById('apply-button');
-        const amountElement = document.getElementById('amount');
+        const basePriceElement = document.getElementById('base-price');
+        const discountItem = document.getElementById('discount-item');
+        const discountAmountElement = document.getElementById('discount-amount');
+        const totalAmountElement = document.getElementById('total-amount');
         const messageElement = document.getElementById('message');
         
-        let originalAmount = 2900;
-        let currentAmount = originalAmount;
+        // Цены
+        const originalPrice = 2900;
+        let currentPrice = originalPrice;
+        let currentDiscount = 0;
 
         // Показываем/скрываем поле промокода
         promoLink.addEventListener('click', () => {
-            if (promoContainer.style.display === 'block') {
-                promoContainer.style.display = 'none';
+            if (promoSection.style.display === 'block') {
+                promoSection.style.display = 'none';
                 promoLink.textContent = 'У меня есть промокод';
                 
                 // Сбрасываем промокод
@@ -192,12 +309,12 @@
                 applyButton.classList.remove('active');
                 messageElement.style.display = 'none';
                 
-                // Восстанавливаем оригинальную сумму
-                currentAmount = originalAmount;
-                updateAmountDisplay();
+                // Сбрасываем скидку
+                resetDiscount();
             } else {
-                promoContainer.style.display = 'block';
+                promoSection.style.display = 'block';
                 promoLink.textContent = 'Скрыть промокод';
+                promoCodeInput.focus();
             }
         });
 
@@ -213,7 +330,17 @@
         });
 
         // Обработка нажатия кнопки "Применить"
-        applyButton.addEventListener('click', () => {
+        applyButton.addEventListener('click', applyPromoCode);
+
+        // Обработка нажатия Enter в поле промокода
+        promoCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && promoCodeInput.value.trim().length > 0) {
+                applyPromoCode();
+            }
+        });
+
+        // Применить промокод
+        function applyPromoCode() {
             const promoCode = promoCodeInput.value.trim();
             
             if (promoCode === '') {
@@ -222,7 +349,7 @@
             }
             
             checkPromoCode(promoCode);
-        });
+        }
 
         // Проверка промокода в Firebase
         function checkPromoCode(promoCode) {
@@ -242,8 +369,8 @@
                 }
                 
                 // Промокод действителен, применяем скидку
-                currentAmount = promoData.amount;
-                updateAmountDisplay();
+                currentDiscount = promoData.discount;
+                applyDiscount(currentDiscount);
                 showMessage('Промокод активирован', 'success');
                 
                 // Уменьшаем количество активаций (если нужно)
@@ -255,9 +382,33 @@
             });
         }
 
-        // Обновление отображаемой суммы
-        function updateAmountDisplay() {
-            amountElement.textContent = currentAmount.toLocaleString('ru-RU') + ' ₽';
+        // Применить скидку
+        function applyDiscount(discount) {
+            currentPrice = originalPrice - discount;
+            
+            // Показываем скидку в чеке
+            discountItem.style.display = 'flex';
+            discountAmountElement.textContent = `-${discount.toLocaleString('ru-RU')} ₽`;
+            
+            // Обновляем итоговую сумму
+            updateTotalPrice();
+        }
+
+        // Сбросить скидку
+        function resetDiscount() {
+            currentDiscount = 0;
+            currentPrice = originalPrice;
+            
+            // Скрываем скидку в чеке
+            discountItem.style.display = 'none';
+            
+            // Обновляем итоговую сумму
+            updateTotalPrice();
+        }
+
+        // Обновить итоговую цену
+        function updateTotalPrice() {
+            totalAmountElement.textContent = `${currentPrice.toLocaleString('ru-RU')} ₽`;
         }
 
         // Показать сообщение
@@ -265,6 +416,11 @@
             messageElement.textContent = text;
             messageElement.className = 'message ' + type;
             messageElement.style.display = 'block';
+            
+            // Скрываем сообщение через 5 секунд
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 5000);
         }
     </script>
 </body>
