@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram WebApp Test</title>
+    <title>Puzzle Bot WebApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -15,46 +15,29 @@
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
         }
-        
-        .container {
-            text-align: center;
-        }
-        
         .btn {
             background-color: #0088cc;
             color: white;
             border: none;
             padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 10px 2px;
-            cursor: pointer;
             border-radius: 8px;
-            transition: background-color 0.3s;
-        }
-        
-        .btn:hover {
-            background-color: #0077bb;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Telegram WebApp Test</h1>
-        <p>Нажмите кнопку ниже, чтобы закрыть WebApp</p>
-        <button class="btn" id="closeButton">Закрыть WebApp</button>
-    </div>
+    <button class="btn" id="closeBtn">Закрыть и отправить "Меню0"</button>
 
     <script>
-        document.getElementById('closeButton').addEventListener('click', function() {
-            // Проверяем, работает ли в Telegram WebApp
-            if (window.Telegram && Telegram.WebApp) {
-                // Закрываем WebApp
-                Telegram.WebApp.close();
+        const btn = document.getElementById('closeBtn');
+        
+        btn.addEventListener('click', () => {
+            if (window.Telegram?.WebApp) {
+                Telegram.WebApp.sendData("Меню0"); // Отправляем данные боту
+                Telegram.WebApp.close(); // Закрываем WebApp
             } else {
-                alert('Этот скрипт работает только внутри Telegram WebApp');
+                alert("Это работает только в Telegram!");
             }
         });
     </script>
