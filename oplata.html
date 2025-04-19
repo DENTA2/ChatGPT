@@ -69,6 +69,33 @@
             padding: 25px;
             margin-bottom: 20px;
             position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-sticker {
+            position: absolute;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .sticker-1 {
+            top: 10%;
+            left: 5%;
+            font-size: 40px;
+            transform: rotate(-15deg);
+        }
+        
+        .sticker-2 {
+            bottom: 15%;
+            right: 10%;
+            font-size: 35px;
+            transform: rotate(10deg);
+        }
+        
+        .sticker-3 {
+            top: 30%;
+            right: 15%;
+            font-size: 30px;
         }
         
         .benefits-title {
@@ -76,12 +103,9 @@
             font-weight: 600;
             color: var(--primary);
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .benefits-title svg {
-            margin-right: 8px;
+            padding-left: 28px;
+            position: relative;
+            z-index: 1;
         }
         
         .benefit-item {
@@ -91,6 +115,7 @@
             font-size: 15px;
             padding-left: 28px;
             position: relative;
+            z-index: 1;
         }
         
         .benefit-item:last-child {
@@ -124,6 +149,10 @@
             font-size: 12px;
             font-weight: 500;
             border-radius: 0 0 12px 0;
+        }
+        
+        .receipt-content {
+            margin-top: 20px;
         }
         
         .receipt-item {
@@ -177,7 +206,7 @@
         .promo-input-container {
             display: flex;
             margin-bottom: 10px;
-            width: 70%;
+            width: 40%;
             transition: all 0.3s ease;
         }
         
@@ -190,6 +219,7 @@
             outline: none;
             background: #FFF9F0;
             max-width: 100%;
+            max-length: 15;
         }
         
         .apply-button {
@@ -262,8 +292,8 @@
         .pay-button {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(to right, var(--primary), var(--primary-light));
-            color: var(--white);
+            background: linear-gradient(to right, #FFD700, var(--primary));
+            color: var(--dark);
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -318,7 +348,7 @@
             }
             
             .promo-input-container {
-                width: 100%;
+                width: 60%;
             }
         }
     </style>
@@ -331,10 +361,11 @@
         </div>
         
         <div class="benefits-card">
+            <div class="ai-sticker sticker-1">🤖</div>
+            <div class="ai-sticker sticker-2">🧠</div>
+            <div class="ai-sticker sticker-3">💡</div>
+            
             <div class="benefits-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
-                </svg>
                 Что входит в курс:
             </div>
             
@@ -369,44 +400,46 @@
         <div class="receipt-card">
             <div class="receipt-label">Расчетная сумма</div>
             
-            <div class="receipt-item">
-                <div class="receipt-item-title">
-                    <div class="receipt-item-bullet"></div>
-                    <span>Полный доступ к курсу</span>
+            <div class="receipt-content">
+                <div class="receipt-item">
+                    <div class="receipt-item-title">
+                        <div class="receipt-item-bullet"></div>
+                        <span>Полный доступ к курсу</span>
+                    </div>
+                    <span id="base-price">2 990 ₽</span>
                 </div>
-                <span id="base-price">2 900 ₽</span>
-            </div>
-            
-            <div class="promo-applied" id="promo-applied">
-                <span id="promo-text"></span>
-                <button class="change-promo" id="change-promo">Изменить</button>
-            </div>
-            
-            <div class="receipt-divider"></div>
-            
-            <div class="total">
-                <span>Итого:</span>
-                <span id="total-amount">2 900 ₽</span>
-            </div>
-            
-            <div id="promo-link-container">
-                <a class="promo-link" id="promo-link">
-                    У меня есть промокод
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 17L15 12L10 7V17Z" fill="currentColor"/>
-                    </svg>
-                </a>
-            </div>
-            
-            <div class="promo-section" id="promo-section">
-                <div class="promo-input-container">
-                    <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод" maxlength="15">
-                    <button id="apply-button" class="apply-button" disabled>Применить</button>
+                
+                <div class="promo-applied" id="promo-applied">
+                    <span id="promo-text"></span>
+                    <button class="change-promo" id="change-promo">Изменить</button>
+                </div>
+                
+                <div class="receipt-divider"></div>
+                
+                <div class="total">
+                    <span>Итого:</span>
+                    <span id="total-amount">2 990 ₽</span>
+                </div>
+                
+                <div id="promo-link-container">
+                    <a class="promo-link" id="promo-link">
+                        У меня есть промокод
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 17L15 12L10 7V17Z" fill="currentColor"/>
+                        </svg>
+                    </a>
+                </div>
+                
+                <div class="promo-section" id="promo-section">
+                    <div class="promo-input-container">
+                        <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод" maxlength="15">
+                        <button id="apply-button" class="apply-button" disabled>Применить</button>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <button class="pay-button">Перейти к оплате</button>
+        <button class="pay-button" id="pay-button">Перейти к оплате</button>
     </div>
     
     <div class="notification" id="notification"></div>
@@ -468,9 +501,10 @@
         const totalAmountElement = document.getElementById('total-amount');
         const changePromoBtn = document.getElementById('change-promo');
         const notification = document.getElementById('notification');
+        const payButton = document.getElementById('pay-button');
         
         // Цены
-        const originalPrice = 2900;
+        const originalPrice = 2990;
         let currentPrice = originalPrice;
         let currentDiscount = 0;
         let appliedPromoCode = '';
@@ -499,6 +533,17 @@
             
             // Показываем поле ввода промокода
             promoLink.addEventListener('click', togglePromoSection);
+            
+            // Обработка кнопки оплаты
+            payButton.addEventListener('click', () => {
+                // Закрываем мини-приложение Telegram
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.close();
+                }
+                
+                // Переходим по ссылке
+                window.location.href = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
+            });
         });
 
         // Переключение состояния кнопки "Применить"
