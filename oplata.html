@@ -6,6 +6,7 @@
     <title>Оплата курса</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -535,16 +536,36 @@
             promoLink.addEventListener('click', togglePromoSection);
             
             // Обработка кнопки оплаты
-            payButton.addEventListener('click', () => {
-                // Закрываем мини-приложение Telegram
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.close();
-                }
-                
-                // Переходим по ссылке
-                window.location.href = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
-            });
+            payButton.addEventListener('click', handlePayment);
         });
+
+        // Обработка нажатия кнопки оплаты
+        function handlePayment() {
+            // Проверяем, открыто ли в Telegram WebView
+            if (window.Telegram && window.Telegram.WebApp) {
+                // Можно передать данные перед закрытием, если нужно
+                const paymentData = {
+                    amount: currentPrice,
+                    promoCode: appliedPromoCode,
+                    timestamp: new Date().toISOString()
+                };
+                
+                try {
+                    // Отправляем данные в основное приложение
+                    Telegram.WebApp.sendData(JSON.stringify(paymentData));
+                    
+                    // Закрываем мини-приложение
+                    Telegram.WebApp.close();
+                } catch (e) {
+                    console.error("Ошибка при закрытии WebApp:", e);
+                    // Если не получилось закрыть через API, пробуем перейти по ссылке
+                    window.location.href = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
+                }
+            } else {
+                // Если не в Telegram, просто переходим по ссылке
+                window.location.href = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
+            }
+        }
 
         // Переключение состояния кнопки "Применить"
         function toggleApplyButton() {
@@ -564,8 +585,7 @@
                 showNotification("Введите промокод", "error");
                 return;
             }
-            
-            checkPromoCode(promoCode);
+                checkPromoCode(promoCode);
         }
 
         // Проверка промокода в Firebase
