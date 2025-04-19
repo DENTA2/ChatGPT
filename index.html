@@ -97,7 +97,7 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
             border: 1px solid var(--light-gray);
@@ -113,11 +113,12 @@
         }
 
         .module-number {
-            font-size: 32px;
+            font-size: 42px;
             font-weight: 700;
             margin-bottom: 8px;
             color: var(--primary);
             line-height: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .module-card.locked .module-number {
@@ -131,10 +132,14 @@
             font-size: 14px;
             font-weight: 500;
             color: var(--text-light);
+            background: rgba(255,255,255,0.8);
+            padding: 4px 8px;
+            border-radius: 6px;
         }
 
         .module-card.locked .module-title {
             color: var(--gray);
+            background: rgba(240,240,240,0.8);
         }
 
         .lock-overlay {
@@ -148,13 +153,15 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
 
         .lock-icon {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             opacity: 0.7;
             margin-bottom: 8px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
         }
 
         /* Модальное окно */
@@ -173,34 +180,48 @@
 
         .modal-content {
             background: var(--white);
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             width: 80%;
             max-width: 300px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: modalAppear 0.3s ease-out forwards;
+        }
+
+        @keyframes modalAppear {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .modal-text {
             margin-bottom: 20px;
             font-size: 16px;
             color: var(--text);
+            line-height: 1.4;
         }
 
         .modal-btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 24px;
+            border-radius: 8px;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
             width: 100%;
+            font-size: 16px;
         }
 
         .modal-btn:hover {
             background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         /* Анимации */
@@ -210,13 +231,31 @@
         }
 
         .module-card {
-            animation: fadeIn 0.3s ease forwards;
+            animation: fadeIn 0.4s ease forwards;
         }
 
         .module-card:nth-child(1) { animation-delay: 0.1s; }
         .module-card:nth-child(2) { animation-delay: 0.2s; }
         .module-card:nth-child(3) { animation-delay: 0.3s; }
         .module-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Эффект нажатия */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(115, 96, 242, 0.3);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -249,7 +288,6 @@
     <script>
         // Конфигурация
         const config = {
-            paid: false, // Будет установлено из параметров
             modules: [
                 { id: 0, title: "Модуль 0", isDemo: true },
                 { id: 1, title: "Модуль 1" },
@@ -257,6 +295,16 @@
                 { id: 3, title: "Модуль 3" }
             ],
             baseUrl: 'https://denta2.github.io/ChatGPT/'
+        };
+
+        // Состояние приложения
+        const appState = {
+            paid: false,
+            user: {
+                id: null,
+                name: 'Пользователь',
+                avatar: null
+            }
         };
 
         // DOM элементы
@@ -269,45 +317,73 @@
         });
 
         function initApp() {
-            // Получаем параметры из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // Устанавливаем данные пользователя
-            setUserData({
-                name: urlParams.get('first_name') || 'Пользователь',
-                avatar: urlParams.get('avatar'),
-                oplata: urlParams.get('oplata') === '1'
-            });
-            
-            // Устанавливаем статус оплаты
-            config.paid = urlParams.get('oplata') === '1';
-            
-            // Обновляем статус в интерфейсе
-            updatePaymentStatus();
+            // Проверяем, открыто ли в Telegram WebApp
+            if (window.Telegram?.WebApp) {
+                initTelegramWebApp();
+            } else {
+                // Для тестирования вне Telegram
+                loadTestData();
+            }
             
             // Рендерим модули
             renderModules();
         }
 
-        function setUserData(data) {
-            // Устанавливаем имя
-            document.getElementById('user-name').textContent = data.name;
+        function initTelegramWebApp() {
+            const tgWebApp = Telegram.WebApp;
             
-            // Устанавливаем аватар
-            const avatarElement = document.getElementById('user-avatar');
-            if (data.avatar && data.avatar !== 'null') {
-                avatarElement.innerHTML = `<img src="${data.avatar}" alt="Аватар">`;
-            } else {
-                // Используем первую букву имени как аватар
-                const fallback = data.name.charAt(0).toUpperCase();
-                document.getElementById('avatar-fallback').textContent = fallback;
+            // Получаем данные пользователя
+            if (tgWebApp.initDataUnsafe?.user) {
+                const tgUser = tgWebApp.initDataUnsafe.user;
+                appState.user = {
+                    id: tgUser.id,
+                    name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' '),
+                    avatar: tgUser.photo_url
+                };
+                
+                // Получаем параметры из URL (включая oplata)
+                const urlParams = new URLSearchParams(window.location.search);
+                appState.paid = urlParams.get('oplata') === '1';
+                
+                // Устанавливаем данные пользователя
+                setUserData();
+                
+                // Развертываем WebApp на весь экран
+                tgWebApp.expand();
             }
         }
 
-        function updatePaymentStatus() {
-            const statusElement = document.getElementById('user-status');
-            statusElement.textContent = config.paid ? 'Премиум доступ' : 'Базовый доступ';
-            statusElement.style.color = config.paid ? 'var(--primary)' : 'var(--gray)';
+        function loadTestData() {
+            // Для тестирования вне Telegram
+            const urlParams = new URLSearchParams(window.location.search);
+            appState.user = {
+                name: urlParams.get('name') || 'Тестовый пользователь',
+                avatar: urlParams.get('avatar')
+            };
+            appState.paid = urlParams.get('oplata') === '1';
+            
+            setUserData();
+        }
+
+        function setUserData() {
+            // Устанавливаем имя
+            document.getElementById('user-name').textContent = appState.user.name;
+            
+            // Устанавливаем аватар
+            const avatarElement = document.getElementById('user-avatar');
+            if (appState.user.avatar) {
+                avatarElement.innerHTML = `<img src="${appState.user.avatar}" alt="Аватар">`;
+            } else {
+                // Используем первую букву имени как аватар
+                const fallback = appState.user.name.charAt(0).toUpperCase();
+                document.getElementById('avatar-fallback').textContent = fallback;
+            }
+            
+            // Устанавливаем статус
+            document.getElementById('user-status').textContent = 
+                appState.paid ? 'Премиум доступ' : 'Базовый доступ';
+            document.getElementById('user-status').style.color = 
+                appState.paid ? 'var(--primary)' : 'var(--gray)';
         }
 
         function renderModules() {
@@ -315,11 +391,11 @@
             container.innerHTML = '';
             
             config.modules.forEach(module => {
-                const isLocked = !module.isDemo && !config.paid;
+                const isLocked = !module.isDemo && !appState.paid;
                 
                 const moduleElement = document.createElement('div');
                 moduleElement.className = `module-card ${isLocked ? 'locked' : ''}`;
-                moduleElement.onclick = () => handleModuleClick(module.id, isLocked);
+                moduleElement.onclick = (e) => handleModuleClick(e, module.id, isLocked);
                 
                 moduleElement.innerHTML = `
                     <div class="module-number">${module.id}</div>
@@ -335,13 +411,33 @@
             });
         }
 
-        function handleModuleClick(moduleId, isLocked) {
+        function handleModuleClick(e, moduleId, isLocked) {
+            // Эффект ripple
+            createRippleEffect(e);
+            
             if (isLocked) {
                 showLockedModal(moduleId);
                 return;
             }
             
             openModule(moduleId);
+        }
+
+        function createRippleEffect(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            e.currentTarget.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
         }
 
         function showLockedModal(moduleId) {
@@ -355,12 +451,23 @@
 
         function openModule(moduleId) {
             // Здесь можно реализовать переход к модулю
-            alert(`Открыт модуль ${moduleId}`);
+            console.log(`Открыт модуль ${moduleId}`);
+            
+            // Пример: window.location.href = `module_${moduleId}.html`;
         }
 
         function goToPayment() {
             closeModal();
             window.location.href = config.baseUrl + 'oplata.html';
+            
+            // Альтернативный вариант с deep link:
+            // const botUrl = 'tg://resolve?domain=ai_eggo_2_bot&start=cmd_pay';
+            // if (window.Telegram && Telegram.WebApp) {
+            //     Telegram.WebApp.openLink(botUrl);
+            //     setTimeout(() => Telegram.WebApp.close(), 300);
+            // } else {
+            //     window.open(botUrl, '_blank');
+            // }
         }
 
         // Закрытие модального окна при клике вне его
