@@ -8,8 +8,9 @@
     <style>
         :root {
             --primary: #7360F2;
-            --secondary: #5E4ECB;
+            --primary-dark: #5E4ECB;
             --text: #2D3748;
+            --text-light: #4A5568;
             --gray: #A0AEC0;
             --light-gray: #EDF2F7;
             --white: #FFFFFF;
@@ -50,6 +51,14 @@
             color: var(--primary);
             font-weight: bold;
             font-size: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .user-info {
@@ -101,7 +110,6 @@
 
         .module-card.locked {
             background: var(--locked-bg);
-            color: var(--gray);
         }
 
         .module-number {
@@ -122,30 +130,37 @@
             bottom: 12px;
             font-size: 14px;
             font-weight: 500;
-            color: var(--text);
-            opacity: 0.7;
+            color: var(--text-light);
         }
 
         .module-card.locked .module-title {
             color: var(--gray);
         }
 
-        .lock-icon {
-            width: 40px;
-            height: 40px;
-            opacity: 0.5;
-            margin-bottom: 8px;
-        }
-
-        .module-card.locked::after {
-            content: "";
+        .lock-overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.7);
-            z-index: 1;
+            background: rgba(247, 250, 252, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .module-card.locked .lock-overlay {
+            opacity: 1;
+        }
+
+        .lock-icon {
+            width: 40px;
+            height: 40px;
+            opacity: 0.7;
+            margin-bottom: 8px;
         }
 
         .footer {
@@ -179,124 +194,151 @@
         </div>
         <div class="user-info">
             <div class="user-name" id="user-name">Пользователь</div>
-            <div class="user-status" id="user-status">
-                {{Oplata}} == 1 ? 'Премиум доступ' : 'Базовый доступ' }}
-            </div>
+            <div class="user-status" id="user-status">Загрузка...</div>
         </div>
     </div>
 
     <h1 class="course-title">Программа курса</h1>
 
-    <div class="modules-container">
-        <!-- Модуль 0 (демо) -->
-        <div class="module-card" onclick="openModule(0)">
-            <div class="module-number">0</div>
-            <div class="module-title">Модуль 0</div>
-        </div>
-
-        <!-- Модуль 1 -->
-        <div class="module-card {{Oplata}} == 0 ? 'locked' : '' }}" onclick="handleModuleClick(1)">
-            <div class="module-number">1</div>
-            <div class="module-title">Модуль 1</div>
-            {% if Oplata == 0 %}
-                <img class="lock-icon" src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Замок">
-            {% endif %}
-        </div>
-
-        <!-- Модуль 2 -->
-        <div class="module-card {{Oplata}} == 0 ? 'locked' : '' }}" onclick="handleModuleClick(2)">
-            <div class="module-number">2</div>
-            <div class="module-title">Модуль 2</div>
-            {% if Oplata == 0 %}
-                <img class="lock-icon" src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Замок">
-            {% endif %}
-        </div>
-
-        <!-- Модуль 3 -->
-        <div class="module-card {{Oplata}} == 0 ? 'locked' : '' }}" onclick="handleModuleClick(3)">
-            <div class="module-number">3</div>
-            <div class="module-title">Модуль 3</div>
-            {% if Oplata == 0 %}
-                <img class="lock-icon" src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Замок">
-            {% endif %}
-        </div>
+    <div class="modules-container" id="modules-container">
+        <!-- Модули будут добавляться динамически -->
     </div>
 
     <div class="footer">
-        © Puzzle Bot • {{CURRENT_YEAR}}
+        © Puzzle Bot • <span id="current-year"></span>
     </div>
 
     <script>
-        // Инициализация данных пользователя
-        function initUserData() {
-            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe) {
-                const user = Telegram.WebApp.initDataUnsafe.user;
-                
-                // Устанавливаем аватар
-                if (user.photo_url) {
-                    document.getElementById('user-avatar').innerHTML = 
-                        `<img src="${user.photo_url}" alt="Аватар" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-                } else {
-                    // Используем первую букву имени как аватар
-                    const fallback = user.first_name ? user.first_name.charAt(0).toUpperCase() : 'U';
-                    document.getElementById('avatar-fallback').textContent = fallback;
-                }
-                
-                // Устанавливаем имя пользователя
-                if (user.first_name) {
-                    let userName = user.first_name;
-                    if (user.last_name) userName += ' ' + user.last_name;
-                    document.getElementById('user-name').textContent = userName;
-                }
+        // Конфигурация
+        const config = {
+            paid: false, // Будет установлено из параметров
+            modules: [
+                { id: 0, title: "Модуль 0", isDemo: true },
+                { id: 1, title: "Модуль 1" },
+                { id: 2, title: "Модуль 2" },
+                { id: 3, title: "Модуль 3" }
+            ]
+        };
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+
+        function initApp() {
+            // Установка текущего года
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            
+            // Получаем параметры из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const userData = {
+                name: urlParams.get('name') || 'Пользователь',
+                avatar: urlParams.get('avatar'),
+                oplata: urlParams.get('oplata') === '1'
+            };
+
+            // Устанавливаем данные пользователя
+            setUserData(userData);
+            
+            // Устанавливаем статус оплаты
+            config.paid = userData.oplata;
+            
+            // Обновляем статус в интерфейсе
+            updatePaymentStatus();
+            
+            // Рендерим модули
+            renderModules();
+        }
+
+        function setUserData(data) {
+            // Устанавливаем имя
+            document.getElementById('user-name').textContent = data.name;
+            
+            // Устанавливаем аватар
+            const avatarElement = document.getElementById('user-avatar');
+            if (data.avatar) {
+                avatarElement.innerHTML = `<img src="${data.avatar}" alt="Аватар">`;
+            } else {
+                // Используем первую букву имени как аватар
+                const fallback = data.name.charAt(0).toUpperCase();
+                document.getElementById('avatar-fallback').textContent = fallback;
             }
         }
 
-        // Обработчик клика по модулю
-        function handleModuleClick(moduleId) {
-            const isLocked = moduleId > 0 && {{Oplata}} === 0;
+        function updatePaymentStatus() {
+            const statusElement = document.getElementById('user-status');
+            statusElement.textContent = config.paid ? 'Премиум доступ' : 'Базовый доступ';
+            statusElement.style.color = config.paid ? 'var(--primary)' : 'var(--gray)';
+        }
+
+        function renderModules() {
+            const container = document.getElementById('modules-container');
+            container.innerHTML = '';
             
+            config.modules.forEach(module => {
+                const isLocked = !module.isDemo && !config.paid;
+                
+                const moduleElement = document.createElement('div');
+                moduleElement.className = `module-card ${isLocked ? 'locked' : ''}`;
+                moduleElement.onclick = () => handleModuleClick(module.id, isLocked);
+                
+                moduleElement.innerHTML = `
+                    <div class="module-number">${module.id}</div>
+                    <div class="module-title">${module.title}</div>
+                    ${isLocked ? `
+                        <div class="lock-overlay">
+                            <img class="lock-icon" src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Замок">
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(moduleElement);
+            });
+        }
+
+        function handleModuleClick(moduleId, isLocked) {
             if (isLocked) {
-                Telegram.WebApp.showAlert(
-                    'Этот модуль недоступен', 
-                    'Для доступа к модулю ' + moduleId + ' необходимо оплатить курс.',
-                    () => {
-                        // Кнопка "ОК" в alert
-                        goToPayment();
-                    }
-                );
+                showPaymentAlert(moduleId);
                 return;
             }
             
             openModule(moduleId);
         }
 
-        // Открытие модуля
-        function openModule(moduleId) {
-            // Здесь можно реализовать переход к модулю
-            Telegram.WebApp.showAlert('Открыт модуль ' + moduleId);
-            
-            // Пример открытия модуля:
-            // window.location.href = 'module_' + moduleId + '.html';
+        function showPaymentAlert(moduleId) {
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.showAlert(
+                    `Модуль ${moduleId} недоступен`,
+                    'Для доступа к этому модулю необходимо оплатить курс.',
+                    () => goToPayment()
+                );
+            } else {
+                if (confirm(`Модуль ${moduleId} недоступен. Перейти к оплате?`)) {
+                    goToPayment();
+                }
+            }
         }
 
-        // Переход к оплате
+        function openModule(moduleId) {
+            // Здесь можно реализовать переход к модулю
+            alert(`Открыт модуль ${moduleId}`);
+            
+            // Пример: window.location.href = `module_${moduleId}.html`;
+        }
+
         function goToPayment() {
+            // Открываем страницу оплаты
             window.location.href = 'oplata.html';
             
             // Альтернативный вариант с deep link:
             // const botUrl = 'tg://resolve?domain=ai_eggo_2_bot&start=cmd_pay';
-            // Telegram.WebApp.openLink(botUrl);
-            // setTimeout(() => Telegram.WebApp.close(), 300);
+            // if (window.Telegram && Telegram.WebApp) {
+            //     Telegram.WebApp.openLink(botUrl);
+            //     setTimeout(() => Telegram.WebApp.close(), 300);
+            // } else {
+            //     window.open(botUrl, '_blank');
+            // }
         }
-
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            initUserData();
-            
-            // Установка текущего года в футере
-            document.querySelector('.footer').textContent = 
-                `© Puzzle Bot • ${new Date().getFullYear()}`;
-        });
     </script>
 </body>
 </html>
