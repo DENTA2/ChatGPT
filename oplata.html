@@ -17,6 +17,7 @@
             --dark: #333333;
             --success: #4CAF50;
             --error: #F44336;
+            --card-gray: #f0f0f0;
         }
         
         * {
@@ -27,7 +28,7 @@
         
         body {
             font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, var(--white) 0%, #FFF3E0 100%);
+            background: var(--white);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -63,12 +64,11 @@
         }
         
         .benefits-card {
-            background: var(--white);
+            background: var(--card-gray);
             border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(255, 122, 0, 0.1);
             padding: 25px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 122, 0, 0.1);
+            position: relative;
         }
         
         .benefits-title {
@@ -106,10 +106,24 @@
         .receipt-card {
             background: var(--white);
             border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(255, 122, 0, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             padding: 25px;
             margin-bottom: 15px;
-            border: 1px solid rgba(255, 122, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .receipt-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #666;
+            color: white;
+            padding: 5px 15px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 0 0 12px 0;
         }
         
         .receipt-item {
@@ -117,11 +131,25 @@
             justify-content: space-between;
             margin-bottom: 12px;
             font-size: 15px;
+            align-items: center;
+        }
+        
+        .receipt-item-title {
+            display: flex;
+            align-items: center;
+        }
+        
+        .receipt-item-bullet {
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin-right: 10px;
         }
         
         .receipt-divider {
             height: 1px;
-            background: linear-gradient(to right, transparent 0%, rgba(255, 122, 0, 0.2) 50%, transparent 100%);
+            background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.1) 50%, transparent 100%);
             margin: 15px 0;
         }
         
@@ -136,11 +164,21 @@
         .promo-section {
             display: none;
             margin-top: 10px;
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        .promo-section.active {
+            display: block;
+            max-height: 100px;
         }
         
         .promo-input-container {
             display: flex;
             margin-bottom: 10px;
+            width: 70%;
+            transition: all 0.3s ease;
         }
         
         .promo-input {
@@ -151,6 +189,7 @@
             font-size: 15px;
             outline: none;
             background: #FFF9F0;
+            max-width: 100%;
         }
         
         .apply-button {
@@ -179,7 +218,7 @@
             display: inline-flex;
             align-items: center;
             margin: 10px 0;
-            transition: color 0.2s;
+            transition: all 0.2s;
         }
         
         .promo-link:hover {
@@ -277,6 +316,10 @@
             .benefits-card, .receipt-card {
                 padding: 20px;
             }
+            
+            .promo-input-container {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -324,8 +367,13 @@
         </div>
         
         <div class="receipt-card">
+            <div class="receipt-label">Расчетная сумма</div>
+            
             <div class="receipt-item">
-                <span>Полный доступ к курсу</span>
+                <div class="receipt-item-title">
+                    <div class="receipt-item-bullet"></div>
+                    <span>Полный доступ к курсу</span>
+                </div>
                 <span id="base-price">2 900 ₽</span>
             </div>
             
@@ -341,16 +389,18 @@
                 <span id="total-amount">2 900 ₽</span>
             </div>
             
-            <a class="promo-link" id="promo-link">
-                У меня есть промокод
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 17L15 12L10 7V17Z" fill="currentColor"/>
-                </svg>
-            </a>
+            <div id="promo-link-container">
+                <a class="promo-link" id="promo-link">
+                    У меня есть промокод
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 17L15 12L10 7V17Z" fill="currentColor"/>
+                    </svg>
+                </a>
+            </div>
             
             <div class="promo-section" id="promo-section">
                 <div class="promo-input-container">
-                    <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод">
+                    <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод" maxlength="15">
                     <button id="apply-button" class="apply-button" disabled>Применить</button>
                 </div>
             </div>
@@ -409,6 +459,7 @@
 
         // DOM элементы
         const promoLink = document.getElementById('promo-link');
+        const promoLinkContainer = document.getElementById('promo-link-container');
         const promoSection = document.getElementById('promo-section');
         const promoCodeInput = document.getElementById('promo-code');
         const applyButton = document.getElementById('apply-button');
@@ -457,12 +508,7 @@
 
         // Показ/скрытие секции промокода
         function togglePromoSection() {
-            if (promoSection.style.display === 'none' || !promoSection.style.display) {
-                promoSection.style.display = 'block';
-                promoCodeInput.focus();
-            } else {
-                promoSection.style.display = 'none';
-            }
+            promoSection.classList.toggle('active');
         }
 
         // Применить промокод
@@ -484,6 +530,7 @@
             promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
                     showNotification("Промокод не найден", "error");
+                    promoCodeInput.value = '';
                     return;
                 }
                 
@@ -491,6 +538,7 @@
                 
                 if (promoData.activations <= 0) {
                     showNotification("Промокод исчерпан по активациям", "error");
+                    promoCodeInput.value = '';
                     return;
                 }
                 
@@ -500,9 +548,10 @@
                 applyDiscount(currentDiscount, promoCode);
                 showNotification("Промокод активирован", "success");
                 
-                // Скрываем поле ввода промокода
-                promoSection.style.display = 'none';
+                // Очищаем и скрываем поле ввода промокода
                 promoCodeInput.value = '';
+                promoSection.classList.remove('active');
+                promoLinkContainer.style.display = 'none';
                 applyButton.disabled = true;
                 
             }).catch((error) => {
@@ -531,6 +580,9 @@
             
             // Скрываем примененный промокод
             promoApplied.style.display = 'none';
+            
+            // Показываем ссылку на промокод
+            promoLinkContainer.style.display = 'block';
             
             // Обновляем итоговую сумму
             updateTotalPrice();
