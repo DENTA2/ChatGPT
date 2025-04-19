@@ -7,47 +7,52 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #FFD700; /* Золотой */
-            --secondary: #FFF5CC; /* Светло-желтый */
-            --text: #333333;
-            --gray: #E0E0E0;
-            --locked-text: #888888;
+            --primary: #FF7A00;
+            --primary-light: #FF9E40;
+            --secondary: #FFD700;
             --white: #FFFFFF;
+            --gray: #F5F5F5;
+            --dark: #333333;
+            --success: #4CAF50;
+            --error: #F44336;
+            --locked-bg: #F0F0F0;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Montserrat', sans-serif;
         }
 
         body {
-            background-color: var(--white);
-            color: var(--text);
+            background: linear-gradient(135deg, var(--white) 0%, #FFF3E0 100%);
+            color: var(--dark);
             min-height: 100vh;
-            padding: 16px;
+            padding: 20px;
         }
 
         /* Шапка с профилем */
         .profile-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: var(--secondary);
-            padding: 16px;
+            gap: 15px;
+            background: var(--white);
+            padding: 20px;
             border-radius: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            box-shadow: 0 4px 16px rgba(255, 122, 0, 0.1);
+            border: 1px solid rgba(255, 122, 0, 0.1);
         }
 
         .avatar {
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -70,13 +75,13 @@
         .user-name {
             font-weight: 600;
             font-size: 18px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
 
         .access-info {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .access-status {
@@ -85,63 +90,76 @@
         }
 
         .access-help {
-            font-size: 16px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
-            color: var(--text);
-            opacity: 0.7;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
 
         .access-help:hover {
-            opacity: 1;
+            transform: scale(1.1);
+            background: var(--primary-light);
         }
 
         /* Модули */
         .modules-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 15px;
         }
 
         .module-card {
             background: var(--white);
             border-radius: 16px;
-            padding: 20px;
+            padding: 25px 20px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 16px rgba(255, 122, 0, 0.1);
             transition: all 0.3s ease;
-            border: 2px solid var(--primary);
+            border: 1px solid rgba(255, 122, 0, 0.1);
             position: relative;
             overflow: hidden;
             aspect-ratio: 1/1;
         }
 
         .module-card.locked {
-            background: var(--gray);
+            background: var(--locked-bg);
             border-color: var(--gray);
-            color: var(--locked-text);
         }
 
         .module-number {
             font-size: 42px;
             font-weight: 800;
             color: var(--primary);
-            margin: 12px 0;
+            margin: 15px 0;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .module-card.locked .module-number {
-            color: var(--locked-text);
+            color: var(--dark);
+            opacity: 0.5;
         }
 
         .module-title {
             font-weight: 500;
             font-size: 16px;
             position: absolute;
-            bottom: 16px;
+            bottom: 20px;
             left: 0;
             right: 0;
             text-align: center;
+            color: var(--dark);
+        }
+
+        .module-card.locked .module-title {
+            color: #666;
         }
 
         .lock-icon {
@@ -151,6 +169,7 @@
             transform: translate(-50%, -50%);
             font-size: 40px;
             opacity: 0.8;
+            color: var(--primary);
         }
 
         /* Модальные окна */
@@ -170,38 +189,39 @@
         .modal-content {
             background: var(--white);
             border-radius: 16px;
-            padding: 24px;
+            padding: 30px 25px;
             width: 85%;
             max-width: 300px;
             text-align: center;
             position: relative;
-            animation: modalAppear 0.3s ease-out;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
         .close-modal {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 15px;
+            right: 15px;
             font-size: 20px;
             cursor: pointer;
-            opacity: 0.5;
-            transition: opacity 0.2s;
+            color: #999;
+            transition: color 0.2s;
         }
 
         .close-modal:hover {
-            opacity: 1;
+            color: var(--primary);
         }
 
         .modal-text {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             line-height: 1.5;
+            font-size: 15px;
         }
 
         .modal-btn {
-            background: var(--primary);
-            color: var(--text);
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
-            padding: 12px 24px;
+            padding: 14px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
@@ -213,28 +233,8 @@
 
         .modal-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(255, 122, 0, 0.2);
         }
-
-        /* Анимации */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes modalAppear {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .module-card {
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        .module-card:nth-child(1) { animation-delay: 0.1s; }
-        .module-card:nth-child(2) { animation-delay: 0.2s; }
-        .module-card:nth-child(3) { animation-delay: 0.3s; }
-        .module-card:nth-child(4) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
@@ -299,7 +299,7 @@
         const state = {
             userId: null,
             isPaid: false,
-            checkInterval: null
+            dbRef: null
         };
 
         // Основная функция
@@ -370,19 +370,8 @@
                 document.getElementById('avatar-fallback').textContent = fallback;
             }
 
-            // Проверяем или создаем запись в БД
-            const userRef = database.ref('users/' + state.userId);
-            const snapshot = await userRef.once('value');
-            
-            if (!snapshot.exists()) {
-                await userRef.set({
-                    name: [user.first_name, user.last_name].filter(Boolean).join(' '),
-                    oplata: 0
-                });
-            }
-
-            // Начинаем мониторинг изменений
-            startPaymentMonitoring();
+            // Инициализируем слушатель изменений в БД
+            initDatabaseListener();
             tg.expand();
         }
 
@@ -396,25 +385,27 @@
             state.userId = "test-user";
             
             updateUI();
-            simulatePaymentChanges();
         }
 
-        function startPaymentMonitoring() {
-            // Проверяем статус сразу
-            checkPaymentStatus();
+        function initDatabaseListener() {
+            state.dbRef = database.ref('users/' + state.userId + '/oplata');
             
-            // Устанавливаем интервал проверки (каждую секунду)
-            state.checkInterval = setInterval(checkPaymentStatus, 1000);
-        }
-
-        async function checkPaymentStatus() {
-            try {
-                const snapshot = await database.ref('users/' + state.userId + '/oplata').once('value');
-                state.isPaid = snapshot.val() === 1;
+            // Обработчик изменений
+            state.dbRef.on('value', (snapshot) => {
+                const oplata = snapshot.val();
+                state.isPaid = oplata === 1;
                 updateUI();
-            } catch (error) {
-                console.error("Ошибка при проверке оплаты:", error);
-            }
+            });
+
+            // Создаем запись пользователя если не существует
+            database.ref('users/' + state.userId).once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    database.ref('users/' + state.userId).set({
+                        name: document.getElementById('user-name').textContent,
+                        oplata: 0
+                    });
+                }
+            });
         }
 
         function updateUI() {
@@ -425,14 +416,14 @@
                 statusElement.style.color = "var(--primary)";
             } else {
                 statusElement.textContent = "Демо просмотр";
-                statusElement.style.color = "var(--locked-text)";
+                statusElement.style.color = "#666";
             }
 
-            // Рендерим модули
-            renderModules();
+            // Рендерим модули (без анимации при обновлении)
+            renderModules(false);
         }
 
-        function renderModules() {
+        function renderModules(withAnimation = true) {
             const modules = [
                 { id: 0, title: "Базовый", isDemo: true },
                 { id: 1, title: "Продвинутый" },
@@ -441,10 +432,11 @@
             ];
 
             let html = '';
-            modules.forEach(module => {
+            modules.forEach((module, index) => {
                 const isLocked = !module.isDemo && !state.isPaid;
                 html += `
                     <div class="module-card ${isLocked ? 'locked' : ''}" 
+                         style="${withAnimation ? `animation: fadeIn 0.4s ease ${index * 0.1}s forwards;` : 'opacity: 1;'}"
                          onclick="handleModuleClick(${module.id}, ${isLocked})">
                         <div class="module-number">${module.id}</div>
                         <div class="module-title">${module.title}</div>
@@ -461,16 +453,6 @@
                 return;
             }
             alert(`Открываем модуль ${moduleId}`);
-        }
-
-        // Функция для тестирования изменений оплаты
-        function simulatePaymentChanges() {
-            if (window.location.href.includes("test-mode")) {
-                setInterval(() => {
-                    state.isPaid = !state.isPaid;
-                    updateUI();
-                }, 3000);
-            }
         }
 
         // Глобальные функции для обработки событий
