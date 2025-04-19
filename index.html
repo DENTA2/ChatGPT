@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Курс Puzzle Bot</title>
+    <title>Онлайн-курс</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -143,17 +143,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(247, 250, 252, 0.8);
+            background: rgba(247, 250, 252, 0.9);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .module-card.locked .lock-overlay {
-            opacity: 1;
         }
 
         .lock-icon {
@@ -163,12 +157,50 @@
             margin-bottom: 8px;
         }
 
-        .footer {
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            width: 80%;
+            max-width: 300px;
             text-align: center;
-            margin-top: 24px;
-            color: var(--gray);
-            font-size: 12px;
-            padding: 12px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-text {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .modal-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .modal-btn:hover {
+            background: var(--primary-dark);
         }
 
         /* Анимации */
@@ -204,8 +236,14 @@
         <!-- Модули будут добавляться динамически -->
     </div>
 
-    <div class="footer">
-        © Puzzle Bot • <span id="current-year"></span>
+    <!-- Модальное окно для заблокированных модулей -->
+    <div class="modal" id="locked-modal">
+        <div class="modal-content">
+            <div class="modal-text" id="modal-text">
+                Модуль недоступен на базовом уровне. Приобретите курс полностью для получения доступа
+            </div>
+            <button class="modal-btn" onclick="goToPayment()">Перейти к оплате</button>
+        </div>
     </div>
 
     <script>
@@ -217,8 +255,13 @@
                 { id: 1, title: "Модуль 1" },
                 { id: 2, title: "Модуль 2" },
                 { id: 3, title: "Модуль 3" }
-            ]
+            ],
+            baseUrl: 'https://denta2.github.io/ChatGPT/'
         };
+
+        // DOM элементы
+        const modal = document.getElementById('locked-modal');
+        const modalText = document.getElementById('modal-text');
 
         // Инициализация приложения
         document.addEventListener('DOMContentLoaded', function() {
@@ -226,22 +269,18 @@
         });
 
         function initApp() {
-            // Установка текущего года
-            document.getElementById('current-year').textContent = new Date().getFullYear();
-            
             // Получаем параметры из URL
             const urlParams = new URLSearchParams(window.location.search);
-            const userData = {
-                name: urlParams.get('name') || 'Пользователь',
+            
+            // Устанавливаем данные пользователя
+            setUserData({
+                name: urlParams.get('first_name') || 'Пользователь',
                 avatar: urlParams.get('avatar'),
                 oplata: urlParams.get('oplata') === '1'
-            };
-
-            // Устанавливаем данные пользователя
-            setUserData(userData);
+            });
             
             // Устанавливаем статус оплаты
-            config.paid = userData.oplata;
+            config.paid = urlParams.get('oplata') === '1';
             
             // Обновляем статус в интерфейсе
             updatePaymentStatus();
@@ -256,7 +295,7 @@
             
             // Устанавливаем аватар
             const avatarElement = document.getElementById('user-avatar');
-            if (data.avatar) {
+            if (data.avatar && data.avatar !== 'null') {
                 avatarElement.innerHTML = `<img src="${data.avatar}" alt="Аватар">`;
             } else {
                 // Используем первую букву имени как аватар
@@ -298,47 +337,38 @@
 
         function handleModuleClick(moduleId, isLocked) {
             if (isLocked) {
-                showPaymentAlert(moduleId);
+                showLockedModal(moduleId);
                 return;
             }
             
             openModule(moduleId);
         }
 
-        function showPaymentAlert(moduleId) {
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.showAlert(
-                    `Модуль ${moduleId} недоступен`,
-                    'Для доступа к этому модулю необходимо оплатить курс.',
-                    () => goToPayment()
-                );
-            } else {
-                if (confirm(`Модуль ${moduleId} недоступен. Перейти к оплате?`)) {
-                    goToPayment();
-                }
-            }
+        function showLockedModal(moduleId) {
+            modalText.textContent = `Модуль ${moduleId} недоступен на базовом уровне. Приобретите курс полностью для получения доступа`;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
         }
 
         function openModule(moduleId) {
             // Здесь можно реализовать переход к модулю
             alert(`Открыт модуль ${moduleId}`);
-            
-            // Пример: window.location.href = `module_${moduleId}.html`;
         }
 
         function goToPayment() {
-            // Открываем страницу оплаты
-            window.location.href = 'oplata.html';
-            
-            // Альтернативный вариант с deep link:
-            // const botUrl = 'tg://resolve?domain=ai_eggo_2_bot&start=cmd_pay';
-            // if (window.Telegram && Telegram.WebApp) {
-            //     Telegram.WebApp.openLink(botUrl);
-            //     setTimeout(() => Telegram.WebApp.close(), 300);
-            // } else {
-            //     window.open(botUrl, '_blank');
-            // }
+            closeModal();
+            window.location.href = config.baseUrl + 'oplata.html';
         }
+
+        // Закрытие модального окна при клике вне его
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
