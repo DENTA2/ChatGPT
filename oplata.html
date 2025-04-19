@@ -10,73 +10,70 @@
         body {
             font-family: 'Arial', sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
             background-color: #f8f9fa;
             color: #333;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
+            width: 100%;
+            max-width: 500px;
         }
         
         .header h1 {
             font-size: 28px;
             font-weight: 700;
             color: #2c3e50;
-            margin: 0;
+            margin: 0 0 10px 0;
+        }
+        
+        .description-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .description-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .description-item:before {
+            content: "✓";
+            color: #27ae60;
+            margin-right: 10px;
+            font-weight: bold;
         }
         
         .receipt {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
             margin-bottom: 20px;
-        }
-        
-        .receipt-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #2c3e50;
         }
         
         .receipt-item {
             display: flex;
             justify-content: space-between;
             margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
         }
         
-        .receipt-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        
-        .item-name {
-            font-size: 16px;
-            color: #555;
-        }
-        
-        .item-price {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .divider {
+        .receipt-divider {
             height: 1px;
             background: #eee;
             margin: 20px 0;
@@ -87,35 +84,30 @@
             justify-content: space-between;
             font-size: 18px;
             font-weight: 700;
-            margin-top: 20px;
         }
         
         .promo-section {
-            margin-top: 25px;
+            margin-top: 20px;
             display: none;
         }
         
-        .promo-input {
+        .promo-input-container {
             display: flex;
             margin-bottom: 15px;
         }
         
-        .promo-input input {
+        .promo-input {
             flex: 1;
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 8px 0 0 8px;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.3s;
+            width: 75%; /* Уменьшили поле на 25% */
         }
         
-        .promo-input input:focus {
-            border-color: #3498db;
-        }
-        
-        .promo-input button {
-            padding: 0 20px;
+        .apply-button {
+            padding: 0 15px;
             background-color: #95a5a6;
             color: white;
             border: none;
@@ -126,7 +118,7 @@
             transition: background-color 0.3s;
         }
         
-        .promo-input button.active {
+        .apply-button.active {
             background-color: #3498db;
             cursor: pointer;
         }
@@ -138,23 +130,20 @@
             font-weight: 500;
             cursor: pointer;
             display: inline-block;
-            margin-top: 15px;
-            transition: color 0.3s;
+            margin-top: 10px;
         }
         
-        .promo-link:hover {
-            color: #2980b9;
-        }
-        
-        .discount-item {
-            color: #27ae60;
+        .promo-applied {
             display: none;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #27ae60;
         }
         
         .message {
             padding: 12px;
             border-radius: 8px;
-            margin-top: 15px;
+            margin-top: 10px;
             font-size: 14px;
             display: none;
         }
@@ -171,6 +160,7 @@
         
         .pay-button {
             width: 100%;
+            max-width: 500px;
             padding: 16px;
             background-color: #3498db;
             color: white;
@@ -180,7 +170,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s;
-            margin-top: 20px;
         }
         
         .pay-button:hover {
@@ -189,49 +178,46 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Полный доступ к курсу</h1>
-        </div>
-        
-        <div class="receipt">
-            <div class="receipt-title">Ваш заказ</div>
-            
-            <div class="receipt-item">
-                <span class="item-name">Полный доступ к курсу</span>
-                <span class="item-price" id="base-price">2 900 ₽</span>
-            </div>
-            
-            <div class="receipt-item">
-                <span class="item-name">Доступ к видео-роликам</span>
-                <span class="item-price">0 ₽</span>
-            </div>
-            
-            <div class="receipt-item discount-item" id="discount-item">
-                <span class="item-name">Скидка по промокоду</span>
-                <span class="item-price" id="discount-amount">-900 ₽</span>
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="total">
-                <span>Итого:</span>
-                <span id="total-amount">2 900 ₽</span>
-            </div>
-            
-            <div class="promo-section" id="promo-section">
-                <div class="promo-input">
-                    <input type="text" id="promo-code" placeholder="Введите промокод">
-                    <button id="apply-button">Применить</button>
-                </div>
-                <div class="message" id="message"></div>
-            </div>
-            
-            <a class="promo-link" id="promo-link">У меня есть промокод</a>
-        </div>
-        
-        <button class="pay-button">Перейти к оплате</button>
+    <div class="header">
+        <h1>Полный доступ курса</h1>
     </div>
+    
+    <div class="description-card">
+        <div class="description-item">Доступ к модулям 1, 2, 3</div>
+        <div class="description-item">Доступ к видео-материалам курса</div>
+        <div class="description-item">Доступ к практическим занятиям</div>
+    </div>
+    
+    <div class="receipt">
+        <div class="receipt-item">
+            <span>Услуга: Полный доступ к курсу</span>
+            <span id="base-price">2 900 ₽</span>
+        </div>
+        
+        <div class="promo-applied" id="promo-applied">
+            <span>Промокод</span>
+            <span id="discount-amount">-990 ₽</span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="total">
+            <span>Итого:</span>
+            <span id="total-amount">2 900 ₽</span>
+        </div>
+        
+        <div class="promo-section" id="promo-section">
+            <div class="promo-input-container">
+                <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод">
+                <button id="apply-button" class="apply-button">Применить</button>
+            </div>
+            <div class="message" id="message"></div>
+        </div>
+        
+        <a class="promo-link" id="promo-link">У меня есть промокод</a>
+    </div>
+    
+    <button class="pay-button">Перейти к оплате</button>
 
     <script>
         // Инициализация Firebase
@@ -250,36 +236,31 @@
         const database = firebase.database();
 
         // Проверяем и создаем корень promo при необходимости
-        function checkAndCreatePromoRoot() {
+        function initializePromoRoot() {
             const promoRef = database.ref('promo');
             
             promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
                     // Создаем корень promo с тестовым промокодом
                     const initialData = {
-                        test123: {
+                        Test: {
                             activations: 0,
-                            discount: 900
-                        },
-                        WELCOME: {
-                            activations: 100,
-                            discount: 500
+                            discount: 990
                         }
                     };
                     
-                    promoRef.set(initialData).then(() => {
-                        console.log("Корень 'promo' создан с тестовыми промокодами");
-                    }).catch((error) => {
-                        console.error("Ошибка при создании корня 'promo':", error);
-                    });
+                    return promoRef.set(initialData);
                 }
+                return Promise.resolve();
+            }).then(() => {
+                console.log("Проверка корня 'promo' завершена");
             }).catch((error) => {
-                console.error("Ошибка при проверке корня 'promo':", error);
+                console.error("Ошибка при инициализации корня 'promo':", error);
             });
         }
 
-        // Вызываем функцию при загрузке страницы
-        document.addEventListener('DOMContentLoaded', checkAndCreatePromoRoot);
+        // Вызываем инициализацию при загрузке страницы
+        window.addEventListener('load', initializePromoRoot);
 
         // DOM элементы
         const promoLink = document.getElementById('promo-link');
@@ -287,7 +268,7 @@
         const promoCodeInput = document.getElementById('promo-code');
         const applyButton = document.getElementById('apply-button');
         const basePriceElement = document.getElementById('base-price');
-        const discountItem = document.getElementById('discount-item');
+        const promoApplied = document.getElementById('promo-applied');
         const discountAmountElement = document.getElementById('discount-amount');
         const totalAmountElement = document.getElementById('total-amount');
         const messageElement = document.getElementById('message');
@@ -308,9 +289,6 @@
                 applyButton.disabled = true;
                 applyButton.classList.remove('active');
                 messageElement.style.display = 'none';
-                
-                // Сбрасываем скидку
-                resetDiscount();
             } else {
                 promoSection.style.display = 'block';
                 promoLink.textContent = 'Скрыть промокод';
@@ -373,9 +351,6 @@
                 applyDiscount(currentDiscount);
                 showMessage('Промокод активирован', 'success');
                 
-                // Уменьшаем количество активаций (если нужно)
-                // promoRef.update({ activations: promoData.activations - 1 });
-                
             }).catch((error) => {
                 console.error("Ошибка при проверке промокода:", error);
                 showMessage('Ошибка при проверке промокода', 'error');
@@ -386,21 +361,9 @@
         function applyDiscount(discount) {
             currentPrice = originalPrice - discount;
             
-            // Показываем скидку в чеке
-            discountItem.style.display = 'flex';
-            discountAmountElement.textContent = `-${discount.toLocaleString('ru-RU')} ₽`;
-            
-            // Обновляем итоговую сумму
-            updateTotalPrice();
-        }
-
-        // Сбросить скидку
-        function resetDiscount() {
-            currentDiscount = 0;
-            currentPrice = originalPrice;
-            
-            // Скрываем скидку в чеке
-            discountItem.style.display = 'none';
+            // Показываем примененный промокод
+            promoApplied.style.display = 'flex';
+            discountAmountElement.textContent = `-${discount} ₽`;
             
             // Обновляем итоговую сумму
             updateTotalPrice();
