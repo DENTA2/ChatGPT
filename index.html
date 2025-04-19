@@ -138,6 +138,15 @@
             font-weight: 600;
             font-size: 18px;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-id {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.4);
+            font-weight: 500;
         }
 
         .access-info {
@@ -293,10 +302,22 @@
             color: var(--primary);
         }
 
+        .modal-title {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
         .modal-text {
             margin-bottom: 25px;
             line-height: 1.5;
             font-size: 15px;
+            text-align: left;
         }
 
         .modal-btn {
@@ -338,7 +359,10 @@
                 <span id="avatar-fallback">U</span>
             </div>
             <div class="user-info">
-                <div class="user-name" id="user-name">Загрузка...</div>
+                <div class="user-name" id="user-name">
+                    <span id="user-name-text">Загрузка...</span>
+                    <span class="user-id" id="user-id"></span>
+                </div>
                 <div class="access-info">
                     <div class="access-status" id="access-status">Проверка доступа...</div>
                     <div class="access-help" id="access-help">?</div>
@@ -375,9 +399,8 @@
         <div class="modal-overlay" id="help-modal">
             <div class="modal-content">
                 <div class="close-modal" id="close-help-modal">×</div>
-                <div class="modal-text" id="help-modal-text">
-                    Загрузка информации...
-                </div>
+                <div class="modal-title" id="help-modal-title"></div>
+                <div class="modal-text" id="help-modal-text"></div>
                 <button class="modal-btn" id="help-payment-btn" style="display: none;">Получить полный доступ</button>
             </div>
         </div>
@@ -454,16 +477,17 @@
 
         function showHelpModal() {
             const helpModal = document.getElementById('help-modal');
+            const titleElement = document.getElementById('help-modal-title');
             const textElement = document.getElementById('help-modal-text');
             const paymentBtn = document.getElementById('help-payment-btn');
 
             if (state.isPaid) {
-                textElement.textContent = 
-                    "Вы находитесь в режиме полного доступа. Все материалы курса теперь доступны без ограничений.";
+                titleElement.textContent = "Полный доступ";
+                textElement.textContent = "Полная версия курса без ограничений.";
                 paymentBtn.style.display = 'none';
             } else {
-                textElement.textContent = 
-                    "Вы в демо-режиме. Доступны только базовые материалы. Для снятия ограничений оформите полный доступ к курсу.";
+                titleElement.textContent = "Демо-просмотр";
+                textElement.textContent = "Ограниченная версия курса, позволяет получить небольшой материал для ознакомления курса. Для получения всех услуг - приобретите курс полностью.";
                 paymentBtn.style.display = 'block';
             }
 
@@ -476,8 +500,11 @@
             state.userId = user.id.toString();
             
             // Устанавливаем данные пользователя
-            document.getElementById('user-name').textContent = 
+            document.getElementById('user-name-text').textContent = 
                 [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Пользователь';
+            
+            // Добавляем ID пользователя
+            document.getElementById('user-id').textContent = `(${state.userId})`;
             
             // Аватар
             const avatarElement = document.getElementById('user-avatar');
@@ -495,7 +522,8 @@
 
         function initTestMode() {
             // Для тестирования без Telegram
-            document.getElementById('user-name').textContent = 'Тестовый пользователь';
+            document.getElementById('user-name-text').textContent = 'Тестовый пользователь';
+            document.getElementById('user-id').textContent = '(test-user)';
             document.getElementById('avatar-fallback').textContent = 'T';
             
             const urlParams = new URLSearchParams(window.location.search);
@@ -519,7 +547,7 @@
             database.ref('users/' + state.userId).once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
                     database.ref('users/' + state.userId).set({
-                        name: document.getElementById('user-name').textContent,
+                        name: document.getElementById('user-name-text').textContent,
                         oplata: 0
                     });
                 }
