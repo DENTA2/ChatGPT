@@ -6,218 +6,436 @@
     <title>Оплата курса</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #FF7A00;
+            --primary-light: #FF9E40;
+            --secondary: #FFD700;
+            --white: #FFFFFF;
+            --gray: #F5F5F5;
+            --dark: #333333;
+            --success: #4CAF50;
+            --error: #F44336;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--white) 0%, #FFF3E0 100%);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
             padding: 20px;
-            background-color: #f8f9fa;
-            color: #333;
+            color: var(--dark);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
-            width: 100%;
-            max-width: 500px;
+            position: relative;
         }
         
         .header h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
-            color: #2c3e50;
-            margin: 0 0 10px 0;
+            color: var(--primary);
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
         }
         
-        .description-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 25px;
+        .header h1:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 2px;
+        }
+        
+        .benefits-card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(255, 122, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 122, 0, 0.1);
+        }
+        
+        .benefits-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+        
+        .benefits-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
             margin-bottom: 20px;
-            width: 100%;
-            max-width: 500px;
-        }
-        
-        .description-item {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            font-size: 16px;
         }
         
-        .description-item:before {
-            content: "✓";
-            color: #27ae60;
+        .benefits-title svg {
             margin-right: 10px;
-            font-weight: bold;
         }
         
-        .receipt {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 25px;
-            width: 100%;
-            max-width: 500px;
-            margin-bottom: 20px;
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .benefit-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .benefit-icon {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: var(--primary);
+        }
+        
+        .receipt-card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(255, 122, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 122, 0, 0.1);
         }
         
         .receipt-item {
             display: flex;
             justify-content: space-between;
             margin-bottom: 15px;
+            font-size: 16px;
         }
         
         .receipt-divider {
             height: 1px;
-            background: #eee;
+            background: linear-gradient(to right, transparent 0%, rgba(255, 122, 0, 0.3) 50%, transparent 100%);
             margin: 20px 0;
+            position: relative;
+        }
+        
+        .receipt-divider:before, .receipt-divider:after {
+            content: '•••';
+            position: absolute;
+            top: -8px;
+            color: var(--primary-light);
+            font-size: 12px;
+        }
+        
+        .receipt-divider:before {
+            left: 10px;
+        }
+        
+        .receipt-divider:after {
+            right: 10px;
         }
         
         .total {
             display: flex;
             justify-content: space-between;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
+            margin-top: 10px;
         }
         
         .promo-section {
             margin-top: 20px;
-            display: none;
+            transition: all 0.3s ease;
         }
         
         .promo-input-container {
             display: flex;
             margin-bottom: 15px;
+            position: relative;
         }
         
         .promo-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px 0 0 8px;
+            padding: 14px 20px;
+            border: 2px solid #FFE0B2;
+            border-radius: 10px 0 0 10px;
             font-size: 16px;
             outline: none;
-            width: 75%; /* Уменьшили поле на 25% */
+            transition: all 0.3s;
+            background: #FFF9F0;
+        }
+        
+        .promo-input:focus {
+            border-color: var(--primary-light);
+            background: var(--white);
         }
         
         .apply-button {
-            padding: 0 15px;
-            background-color: #95a5a6;
-            color: white;
+            padding: 0 20px;
+            background-color: #FFC107;
+            color: var(--dark);
             border: none;
-            border-radius: 0 8px 8px 0;
-            cursor: not-allowed;
+            border-radius: 0 10px 10px 0;
+            cursor: pointer;
             font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .apply-button:not(.active) {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
         
         .apply-button.active {
-            background-color: #3498db;
-            cursor: pointer;
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .apply-button.active:hover {
+            background-color: var(--primary-light);
         }
         
         .promo-link {
-            color: #3498db;
+            color: var(--primary);
             text-decoration: none;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s;
             margin-top: 10px;
+        }
+        
+        .promo-link svg {
+            margin-left: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .promo-link:hover {
+            color: var(--primary-light);
+        }
+        
+        .promo-link:hover svg {
+            transform: translateX(3px);
         }
         
         .promo-applied {
             display: none;
             justify-content: space-between;
-            margin-bottom: 10px;
-            color: #27ae60;
-        }
-        
-        .message {
-            padding: 12px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            background: #F1F8E9;
             border-radius: 8px;
-            margin-top: 10px;
-            font-size: 14px;
-            display: none;
+            color: var(--success);
+            font-weight: 500;
         }
         
-        .error {
-            background-color: #fadbd8;
-            color: #c0392b;
-        }
-        
-        .success {
-            background-color: #d5f5e3;
-            color: #27ae60;
+        .change-promo {
+            background: none;
+            border: none;
+            color: #1976D2;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
         }
         
         .pay-button {
             width: 100%;
-            max-width: 500px;
-            padding: 16px;
-            background-color: #3498db;
-            color: white;
+            padding: 18px;
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 18px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+            margin-top: 20px;
         }
         
         .pay-button:hover {
-            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 122, 0, 0.4);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        .notification.success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .notification.error {
+            background-color: var(--error);
+            color: white;
+        }
+        
+        .decoration {
+            position: fixed;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,214,0,0.15) 0%, rgba(255,214,0,0) 70%);
+            z-index: -1;
+        }
+        
+        .decoration-1 {
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+        }
+        
+        .decoration-2 {
+            bottom: -100px;
+            left: -50px;
+            width: 400px;
+            height: 400px;
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .benefits-card, .receipt-card {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Полный доступ курса</h1>
-    </div>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
     
-    <div class="description-card">
-        <div class="description-item">Доступ к модулям 1, 2, 3</div>
-        <div class="description-item">Доступ к видео-материалам курса</div>
-        <div class="description-item">Доступ к практическим занятиям</div>
-    </div>
-    
-    <div class="receipt">
-        <div class="receipt-item">
-            <span>Услуга: Полный доступ к курсу</span>
-            <span id="base-price">2 900 ₽</span>
+    <div class="container">
+        <div class="header">
+            <h1>Полный доступ курса</h1>
+            <p>Приобретите доступ ко всем материалам курса</p>
         </div>
         
-        <div class="promo-applied" id="promo-applied">
-            <span>Промокод</span>
-            <span id="discount-amount">-990 ₽</span>
-        </div>
-        
-        <div class="receipt-divider"></div>
-        
-        <div class="total">
-            <span>Итого:</span>
-            <span id="total-amount">2 900 ₽</span>
-        </div>
-        
-        <div class="promo-section" id="promo-section">
-            <div class="promo-input-container">
-                <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод">
-                <button id="apply-button" class="apply-button">Применить</button>
+        <div class="benefits-card">
+            <div class="benefits-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+                </svg>
+                Что вы получите:
             </div>
-            <div class="message" id="message"></div>
+            
+            <div class="benefit-item">
+                <div class="benefit-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>Доступ к модулям 1, 2, 3 с практическими заданиями</div>
+            </div>
+            
+            <div class="benefit-item">
+                <div class="benefit-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>Доступ к видео-материалам курса в HD качестве</div>
+            </div>
+            
+            <div class="benefit-item">
+                <div class="benefit-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>Доступ к практическим занятиям с проверкой</div>
+            </div>
         </div>
         
-        <a class="promo-link" id="promo-link">У меня есть промокод</a>
+        <div class="receipt-card">
+            <div class="receipt-item">
+                <span>Полный доступ к курсу</span>
+                <span id="base-price">2 900 ₽</span>
+            </div>
+            
+            <div class="promo-applied" id="promo-applied">
+                <div>
+                    <span>Промокод: </span>
+                    <span id="promo-code-display"></span>
+                    <span> (скидка </span>
+                    <span id="discount-amount"></span>
+                    <span>)</span>
+                </div>
+                <button class="change-promo" id="change-promo">Изменить</button>
+            </div>
+            
+            <div class="receipt-divider"></div>
+            
+            <div class="total">
+                <span>Итого:</span>
+                <span id="total-amount">2 900 ₽</span>
+            </div>
+            
+            <div class="promo-section" id="promo-section">
+                <div class="promo-input-container">
+                    <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод">
+                    <button id="apply-button" class="apply-button">Применить</button>
+                </div>
+                <a class="promo-link" id="promo-link">
+                    У меня есть промокод
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 17L15 12L10 7V17Z" fill="currentColor"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        
+        <button class="pay-button">Перейти к оплате</button>
     </div>
     
-    <button class="pay-button">Перейти к оплате</button>
+    <div class="notification" id="notification"></div>
 
     <script>
         // Инициализация Firebase
@@ -239,90 +457,103 @@
         function initializePromoRoot() {
             const promoRef = database.ref('promo');
             
-            promoRef.once('value').then((snapshot) => {
+            return promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
-                    // Создаем корень promo с тестовым промокодом
-                    const initialData = {
+                    console.log("Creating 'promo' root...");
+                    return promoRef.set({
                         Test: {
                             activations: 0,
                             discount: 990
+                        },
+                        WELCOME: {
+                            activations: 100,
+                            discount: 500
                         }
-                    };
-                    
-                    return promoRef.set(initialData);
+                    }).then(() => {
+                        console.log("'promo' root created successfully");
+                        return true;
+                    });
                 }
-                return Promise.resolve();
-            }).then(() => {
-                console.log("Проверка корня 'promo' завершена");
+                console.log("'promo' root already exists");
+                return false;
             }).catch((error) => {
-                console.error("Ошибка при инициализации корня 'promo':", error);
+                console.error("Database error:", error);
+                showNotification("Ошибка подключения к базе данных", "error");
+                throw error;
             });
         }
-
-        // Вызываем инициализацию при загрузке страницы
-        window.addEventListener('load', initializePromoRoot);
 
         // DOM элементы
         const promoLink = document.getElementById('promo-link');
         const promoSection = document.getElementById('promo-section');
         const promoCodeInput = document.getElementById('promo-code');
         const applyButton = document.getElementById('apply-button');
-        const basePriceElement = document.getElementById('base-price');
         const promoApplied = document.getElementById('promo-applied');
+        const promoCodeDisplay = document.getElementById('promo-code-display');
         const discountAmountElement = document.getElementById('discount-amount');
         const totalAmountElement = document.getElementById('total-amount');
-        const messageElement = document.getElementById('message');
+        const changePromoBtn = document.getElementById('change-promo');
+        const notification = document.getElementById('notification');
         
         // Цены
         const originalPrice = 2900;
         let currentPrice = originalPrice;
         let currentDiscount = 0;
+        let appliedPromoCode = '';
 
-        // Показываем/скрываем поле промокода
-        promoLink.addEventListener('click', () => {
-            if (promoSection.style.display === 'block') {
-                promoSection.style.display = 'none';
-                promoLink.textContent = 'У меня есть промокод';
-                
-                // Сбрасываем промокод
-                promoCodeInput.value = '';
-                applyButton.disabled = true;
-                applyButton.classList.remove('active');
-                messageElement.style.display = 'none';
-            } else {
-                promoSection.style.display = 'block';
-                promoLink.textContent = 'Скрыть промокод';
-                promoCodeInput.focus();
-            }
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePromoRoot().catch(error => {
+                console.error("Initialization failed:", error);
+            });
+            
+            // Активация кнопки "Применить" при вводе промокода
+            promoCodeInput.addEventListener('input', toggleApplyButton);
+            
+            // Обработка нажатия кнопки "Применить"
+            applyButton.addEventListener('click', applyPromoCode);
+            
+            // Обработка нажатия Enter в поле промокода
+            promoCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && promoCodeInput.value.trim().length > 0) {
+                    applyPromoCode();
+                }
+            });
+            
+            // Обработка кнопки "Изменить" промокод
+            changePromoBtn.addEventListener('click', resetPromoCode);
+            
+            // Показываем/скрываем поле промокода
+            promoLink.addEventListener('click', togglePromoSection);
         });
 
-        // Активация кнопки "Применить" при вводе промокода
-        promoCodeInput.addEventListener('input', () => {
+        // Переключение состояния кнопки "Применить"
+        function toggleApplyButton() {
             if (promoCodeInput.value.trim().length > 0) {
-                applyButton.disabled = false;
                 applyButton.classList.add('active');
             } else {
-                applyButton.disabled = true;
                 applyButton.classList.remove('active');
             }
-        });
+        }
 
-        // Обработка нажатия кнопки "Применить"
-        applyButton.addEventListener('click', applyPromoCode);
-
-        // Обработка нажатия Enter в поле промокода
-        promoCodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && promoCodeInput.value.trim().length > 0) {
-                applyPromoCode();
+        // Показ/скрытие секции промокода
+        function togglePromoSection() {
+            if (promoSection.style.display === 'block' || promoSection.style.display === '') {
+                promoSection.style.display = 'none';
+                promoLink.innerHTML = 'У меня есть промокод <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 17L15 12L10 7V17Z" fill="currentColor"/></svg>';
+            } else {
+                promoSection.style.display = 'block';
+                promoLink.innerHTML = 'Скрыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 17L15 12L10 7V17Z" fill="currentColor"/></svg>';
+                promoCodeInput.focus();
             }
-        });
+        }
 
         // Применить промокод
         function applyPromoCode() {
             const promoCode = promoCodeInput.value.trim();
             
             if (promoCode === '') {
-                showMessage('Введите промокод', 'error');
+                showNotification("Введите промокод", "error");
                 return;
             }
             
@@ -335,35 +566,60 @@
             
             promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
-                    showMessage('Промокод не найден', 'error');
+                    showNotification("Промокод не найден", "error");
                     return;
                 }
                 
                 const promoData = snapshot.val();
                 
                 if (promoData.activations <= 0) {
-                    showMessage('Промокод исчерпан по активациям', 'error');
+                    showNotification("Промокод исчерпан по активациям", "error");
                     return;
                 }
                 
                 // Промокод действителен, применяем скидку
+                appliedPromoCode = promoCode;
                 currentDiscount = promoData.discount;
-                applyDiscount(currentDiscount);
-                showMessage('Промокод активирован', 'success');
+                applyDiscount(currentDiscount, promoCode);
+                showNotification("Промокод активирован", "success");
+                
+                // Скрываем поле ввода промокода
+                promoSection.style.display = 'none';
+                promoLink.style.display = 'none';
                 
             }).catch((error) => {
                 console.error("Ошибка при проверке промокода:", error);
-                showMessage('Ошибка при проверке промокода', 'error');
+                showNotification("Ошибка при проверке промокода", "error");
             });
         }
 
         // Применить скидку
-        function applyDiscount(discount) {
+        function applyDiscount(discount, promoCode) {
             currentPrice = originalPrice - discount;
             
             // Показываем примененный промокод
             promoApplied.style.display = 'flex';
+            promoCodeDisplay.textContent = promoCode;
             discountAmountElement.textContent = `-${discount} ₽`;
+            
+            // Обновляем итоговую сумму
+            updateTotalPrice();
+        }
+
+        // Сбросить промокод
+        function resetPromoCode() {
+            currentDiscount = 0;
+            currentPrice = originalPrice;
+            appliedPromoCode = '';
+            
+            // Скрываем примененный промокод
+            promoApplied.style.display = 'none';
+            
+            // Показываем поле для ввода промокода
+            promoSection.style.display = 'block';
+            promoLink.style.display = 'inline-flex';
+            promoCodeInput.value = '';
+            toggleApplyButton();
             
             // Обновляем итоговую сумму
             updateTotalPrice();
@@ -374,16 +630,16 @@
             totalAmountElement.textContent = `${currentPrice.toLocaleString('ru-RU')} ₽`;
         }
 
-        // Показать сообщение
-        function showMessage(text, type) {
-            messageElement.textContent = text;
-            messageElement.className = 'message ' + type;
-            messageElement.style.display = 'block';
+        // Показать уведомление
+        function showNotification(text, type) {
+            notification.textContent = text;
+            notification.className = `notification ${type}`;
+            notification.style.opacity = 1;
             
-            // Скрываем сообщение через 5 секунд
+            // Скрываем уведомление через 2 секунды
             setTimeout(() => {
-                messageElement.style.display = 'none';
-            }, 5000);
+                notification.style.opacity = 0;
+            }, 2000);
         }
     </script>
 </body>
