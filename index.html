@@ -35,6 +35,65 @@
             padding: 20px;
         }
 
+        /* Экран загрузки */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--white) 0%, #FFF3E0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-text {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .loading-balls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .loading-ball {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            animation: bounce 1s infinite ease-in-out;
+        }
+
+        .loading-ball:nth-child(1) {
+            background: var(--primary);
+            animation-delay: 0s;
+        }
+
+        .loading-ball:nth-child(2) {
+            background: var(--secondary);
+            animation-delay: 0.2s;
+        }
+
+        .loading-ball:nth-child(3) {
+            background: #AAAAAA;
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Основной контент (изначально скрыт) */
+        #app-content {
+            display: none;
+        }
+
         /* Шапка с профилем */
         .profile-header {
             display: flex;
@@ -43,7 +102,7 @@
             background: var(--white);
             padding: 20px;
             border-radius: 16px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 16px rgba(255, 122, 0, 0.1);
             border: 1px solid rgba(255, 122, 0, 0.1);
         }
@@ -109,11 +168,28 @@
             background: var(--primary-light);
         }
 
+        /* Разделительная линия */
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary), var(--secondary), transparent);
+            margin: 20px 0;
+            border: none;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
         /* Модули */
         .modules-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
+            margin-bottom: 20px;
         }
 
         .module-card {
@@ -238,44 +314,66 @@
     </style>
 </head>
 <body>
-    <!-- Шапка профиля -->
-    <div class="profile-header">
-        <div class="avatar" id="user-avatar">
-            <span id="avatar-fallback">U</span>
-        </div>
-        <div class="user-info">
-            <div class="user-name" id="user-name">Загрузка...</div>
-            <div class="access-info">
-                <div class="access-status" id="access-status">Проверка доступа...</div>
-                <div class="access-help" id="access-help">?</div>
-            </div>
+    <!-- Экран загрузки -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-text">Загрузка</div>
+        <div class="loading-balls">
+            <div class="loading-ball"></div>
+            <div class="loading-ball"></div>
+            <div class="loading-ball"></div>
         </div>
     </div>
 
-    <!-- Модули курса -->
-    <div class="modules-grid" id="modules-container">
-        <!-- Заполнится динамически -->
-    </div>
-
-    <!-- Модальное окно блокировки -->
-    <div class="modal-overlay" id="lock-modal">
-        <div class="modal-content">
-            <div class="close-modal" id="close-lock-modal">×</div>
-            <div class="modal-text">
-                Этот модуль недоступен в демо-версии. Для полного доступа к материалам курса необходимо оформить подписку.
+    <!-- Основной контент -->
+    <div id="app-content">
+        <!-- Шапка профиля -->
+        <div class="profile-header">
+            <div class="avatar" id="user-avatar">
+                <span id="avatar-fallback">U</span>
             </div>
-            <button class="modal-btn" id="to-payment-btn">Получить полный доступ</button>
+            <div class="user-info">
+                <div class="user-name" id="user-name">Загрузка...</div>
+                <div class="access-info">
+                    <div class="access-status" id="access-status">Проверка доступа...</div>
+                    <div class="access-help" id="access-help">?</div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Модальное окно справки -->
-    <div class="modal-overlay" id="help-modal">
-        <div class="modal-content">
-            <div class="close-modal" id="close-help-modal">×</div>
-            <div class="modal-text" id="help-modal-text">
-                Загрузка информации...
+        <!-- Разделительная линия -->
+        <hr class="divider">
+
+        <!-- Секция модулей -->
+        <div class="section-title">Модули курса</div>
+
+        <!-- Модули курса -->
+        <div class="modules-grid" id="modules-container">
+            <!-- Заполнится динамически -->
+        </div>
+
+        <!-- Заключительная разделительная линия -->
+        <hr class="divider">
+
+        <!-- Модальное окно блокировки -->
+        <div class="modal-overlay" id="lock-modal">
+            <div class="modal-content">
+                <div class="close-modal" id="close-lock-modal">×</div>
+                <div class="modal-text">
+                    Этот модуль недоступен в демо-версии. Для полного доступа к материалам курса необходимо оформить подписку.
+                </div>
+                <button class="modal-btn" id="to-payment-btn">Получить полный доступ</button>
             </div>
-            <button class="modal-btn" id="help-payment-btn" style="display: none;">Получить полный доступ</button>
+        </div>
+
+        <!-- Модальное окно справки -->
+        <div class="modal-overlay" id="help-modal">
+            <div class="modal-content">
+                <div class="close-modal" id="close-help-modal">×</div>
+                <div class="modal-text" id="help-modal-text">
+                    Загрузка информации...
+                </div>
+                <button class="modal-btn" id="help-payment-btn" style="display: none;">Получить полный доступ</button>
+            </div>
         </div>
     </div>
 
@@ -304,8 +402,22 @@
 
         // Основная функция
         document.addEventListener('DOMContentLoaded', async () => {
+            // Показываем экран загрузки
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.display = 'flex';
+            
+            // Инициализируем модальные окна
             initModals();
             
+            // Запускаем таймер для скрытия экрана загрузки
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    document.getElementById('app-content').style.display = 'block';
+                }, 300); // Время для fade-out анимации
+            }, 1000); // Общее время загрузки - 1 секунда
+
             if (window.Telegram?.WebApp) {
                 initTelegramApp();
             } else {
