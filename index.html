@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle Bot WebApp</title>
+    <title>Telegram WebApp Command</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -27,15 +27,21 @@
     </style>
 </head>
 <body>
-    <button class="btn" id="closeBtn">Закрыть и отправить "Меню0"</button>
+    <button class="btn" id="actionBtn">Выполнить команду и закрыть</button>
 
     <script>
-        const btn = document.getElementById('closeBtn');
+        const actionBtn = document.getElementById('actionBtn');
         
-        btn.addEventListener('click', () => {
+        actionBtn.addEventListener('click', () => {
             if (window.Telegram?.WebApp) {
-                Telegram.WebApp.sendData("Меню0"); // Отправляем данные боту
-                Telegram.WebApp.close(); // Закрываем WebApp
+                // 1. Открываем deep-link (активируем команду в боте)
+                const deepLink = 'tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3474703478';
+                window.open(deepLink, '_blank');
+                
+                // 2. Закрываем WebApp (возвращаем в чат)
+                setTimeout(() => {
+                    Telegram.WebApp.close();
+                }, 300); // Небольшая задержка, чтобы ссылка успела сработать
             } else {
                 alert("Это работает только в Telegram!");
             }
