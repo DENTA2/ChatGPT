@@ -3,49 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram WebApp Command</title>
+    <title>Курс Puzzle Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #7360F2;
+            --secondary: #312e81;
+            --text: #1e293b;
+            --gray: #94a3b8;
+            --light-gray: #e2e8f0;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
         body {
+            background-color: #f8fafc;
+            color: var(--text);
+            padding: 16px;
+        }
+
+        .header {
             display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .course-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .module-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--light-gray);
+        }
+
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-card.locked {
+            background: var(--light-gray);
+            color: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .module-number {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .module-card.locked .module-number {
+            color: var(--gray);
+        }
+
+        .module-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        .tooltip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 12px;
         }
-        .btn {
-            background-color: #0088cc;
+
+        .module-card.locked:hover .tooltip {
+            opacity: 1;
+        }
+
+        .tooltip-text {
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .payment-btn {
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 15px 32px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .payment-btn:hover {
+            background: var(--secondary);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--gray);
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <button class="btn" id="actionBtn">Выполнить команду и закрыть</button>
+    <div class="header">
+        <img id="user-avatar" class="avatar" src="{{USER_AVATAR_URL}}" alt="Аватар">
+        <div id="user-name" class="user-name">{{USER_NAME}}</div>
+    </div>
+
+    <h1 class="course-title">Название курса</h1>
+
+    <div class="modules-grid">
+        <!-- Модуль 0 (демо) -->
+        <div class="module-card" onclick="openModule(0)">
+            <div class="module-number">0</div>
+            <div class="module-title">Демо-модуль</div>
+        </div>
+
+        <!-- Модуль 1 -->
+        <div class="module-card {{Oplata}} == 0 ? 'locked' : '' }}" onclick="openModule(1)">
+            <div class="module-number">1</div>
+            <div class="module-title">Основы</div>
+            {% if Oplata == 0 %}
+                <img class="lock-icon" src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Замок">
+                <div class="tooltip">
+                    <div class="tooltip-text">Этот модуль доступен только при оплате курса</div>
+                    <button class="payment-btn" onclick="goToPayment()">Перейти к оплате</button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Модуль 2 -->
+        <div class="module-card {{Oplata}} == 0 ? 'locked' : '' }}" onclick="openModule(2)">
+            <div class="module-number">2</div>
+            <div class="module-title">Продвинутый уровень</div>
+            {% if Oplata == 0 %}
+                <img class="lock-icon" src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Замок">
+                <div class="tooltip">
+                    <div class="tooltip-text">Этот модуль доступен только при оплате курса</div>
+                    <button class="payment-btn" onclick="goToPayment()">Перейти к оплате</button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Модуль 3 -->
+        <div class="module-card {{Oplata}} == 0 ? 'locked' : '' }}" onclick="openModule(3)">
+            <div class="module-number">3</div>
+            <div class="module-title">Экспертные техники</div>
+            {% if Oplata == 0 %}
+                <img class="lock-icon" src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Замок">
+                <div class="tooltip">
+                    <div class="tooltip-text">Этот модуль доступен только при оплате курса</div>
+                    <button class="payment-btn" onclick="goToPayment()">Перейти к оплате</button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="footer">
+        © Puzzle Bot, 2024
+    </div>
 
     <script>
-        const actionBtn = document.getElementById('actionBtn');
-        
-        actionBtn.addEventListener('click', () => {
-            if (window.Telegram?.WebApp) {
-                // 1. Открываем deep-link (активируем команду в боте)
-                const deepLink = 'tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3474703478';
-                window.open(deepLink, '_blank');
-                
-                // 2. Закрываем WebApp (возвращаем в чат)
-                setTimeout(() => {
-                    Telegram.WebApp.close();
-                }, 300); // Небольшая задержка, чтобы ссылка успела сработать
-            } else {
-                alert("Это работает только в Telegram!");
-            }
-        });
+        // Проверяем, открыто ли в Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            const user = Telegram.WebApp.initDataUnsafe.user;
+            document.getElementById('user-avatar').src = user.photo_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+            document.getElementById('user-name').textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+        }
+
+        // Переход к оплате
+        function goToPayment() {
+            event.stopPropagation(); // Предотвращаем всплытие
+            window.location.href = 'oplata.html';
+        }
+
+        // Открытие модуля
+        function openModule(moduleId) {
+            const isLocked = moduleId > 0 && {{Oplata}} === 0;
+            if (isLocked) return;
+            
+            alert(`Открыт модуль ${moduleId}`);
+            // Здесь можно добавить переход к конкретному модулю
+        }
     </script>
 </body>
 </html>
