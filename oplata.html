@@ -746,6 +746,39 @@
             }, 2000);
         }
 
+        // Надежное закрытие WebApp
+        function closeWebApp() {
+            // 1. Попытка закрыть через Telegram WebApp API
+            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.close) {
+                try {
+                    Telegram.WebApp.close();
+                    return;
+                } catch (e) {
+                    console.error("Ошибка при закрытии через Telegram.WebApp.close:", e);
+                }
+            }
+
+            // 2. Попытка закрыть через редирект (для браузеров)
+            try {
+                window.location.href = "https://t.me/your_bot_username";
+                setTimeout(() => {
+                    window.close();
+                }, 100);
+            } catch (e) {
+                console.error("Ошибка при закрытии через редирект:", e);
+            }
+
+            // 3. Финальная попытка закрыть окно
+            setTimeout(() => {
+                try {
+                    window.close();
+                } catch (e) {
+                    console.error("Ошибка при закрытии окна:", e);
+                    showNotification("Счет создан! Вернитесь в чат", "success");
+                }
+            }, 500);
+        }
+
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', async () => {
             await checkInitialPaymentStatus();
@@ -804,12 +837,8 @@
             try {
                 await sendPaymentCommand();
                 
-                // Закрываем окно через 0.5 секунды
-                setTimeout(() => {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.close();
-                    }
-                }, 500);
+                // Закрываем WebApp
+                closeWebApp();
                 
             } catch (error) {
                 console.error("Ошибка при обработке платежа:", error);
