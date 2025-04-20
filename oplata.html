@@ -19,6 +19,7 @@
             --success: #4CAF50;
             --error: #F44336;
             --card-gray: #f0f0f0;
+            --disabled: #CCCCCC;
         }
         
         * {
@@ -196,7 +197,7 @@
         .promo-input-container {
             display: flex;
             margin-bottom: 10px;
-            width: 60%;
+            width: 100%;
             transition: all 0.3s ease;
         }
         
@@ -209,6 +210,7 @@
             outline: none;
             background: #FFF9F0;
             max-length: 15;
+            width: calc(100% - 45px);
         }
         
         .apply-button {
@@ -314,6 +316,12 @@
             background-color: rgba(255, 122, 0, 0.1);
         }
         
+        .back-button:disabled {
+            border-color: var(--disabled);
+            color: var(--disabled);
+            cursor: not-allowed;
+        }
+        
         .pay-button {
             flex: 1;
             padding: 18px;
@@ -326,37 +334,34 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 4px 12px rgba(255, 166, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
         
-        .pay-button:hover {
+        .pay-button:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(255, 166, 0, 0.4);
         }
         
-        .notification {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 15px 25px;
-            border-radius: 8px;
-            font-weight: 500;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            max-width: 80%;
-            text-align: center;
-            font-size: 15px;
+        .pay-button:disabled {
+            background: var(--disabled);
+            cursor: not-allowed;
         }
         
-        .notification.success {
-            background-color: var(--success);
-            color: white;
+        .pay-button.loading::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: loading 1.5s infinite;
         }
         
-        .notification.error {
-            background-color: var(--error);
-            color: white;
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .payment-success {
@@ -421,10 +426,6 @@
                 padding: 20px;
             }
             
-            .promo-input-container {
-                width: 70%;
-            }
-            
             .buttons-container {
                 gap: 8px;
             }
@@ -442,7 +443,7 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="main-container">
         <div class="header">
             <h1>Полный доступ курса</h1>
         </div>
@@ -541,11 +542,9 @@
     
     <div class="payment-success" id="payment-success">
         <div class="success-icon">✓</div>
-        <div class="success-message">Счет успешно оплачен!<br>Пожалуйста, вернитесь в главное меню курса!</div>
-        <button class="success-button" id="success-button">Хорошо!</button>
+        <div class="success-message">Оплата прошла успешно!</div>
+        <button class="success-button" id="success-button">Вернуться в меню</button>
     </div>
-    
-    <div class="notification" id="notification"></div>
 
     <script>
         // Инициализация Firebase
@@ -566,7 +565,7 @@
         // Конфигурация Puzzle Bot API
         const puzzleBotConfig = {
             apiToken: 'Xer726MfatevnjQzPJaP4TfPSd7dd1HN',
-            commandName: 'Оплата2990' // Название команды для отправки
+            commandName: 'Оплата2990'
         };
 
         // DOM элементы
@@ -580,11 +579,11 @@
         const promoText = document.getElementById('promo-text');
         const totalAmountElement = document.getElementById('total-amount');
         const changePromoBtn = document.getElementById('change-promo');
-        const notification = document.getElementById('notification');
         const payButton = document.getElementById('pay-button');
         const paymentSuccess = document.getElementById('payment-success');
         const successButton = document.getElementById('success-button');
         const receiptDate = document.getElementById('receipt-date');
+        const mainContainer = document.getElementById('main-container');
         
         // Цены
         const originalPrice = 2990;
@@ -593,6 +592,7 @@
         let appliedPromoCode = '';
         let paymentCheckInterval;
         let userId = '';
+        let isProcessingPayment = false;
 
         // Получаем ID пользователя из cookie
         function getUserIdFromCookie() {
@@ -617,13 +617,14 @@
         function checkPaymentStatus() {
             if (!userId) return;
             
-            const paymentRef = database.ref(`users/${userId}/payment_status`);
+            const paymentRef = database.ref(`users/${userId}/oplata`);
             
             paymentRef.on('value', (snapshot) => {
                 const status = snapshot.val();
                 
-                if (status === 'paid') {
+                if (status === 1) {
                     // Показываем экран успешной оплаты
+                    mainContainer.style.display = 'none';
                     paymentSuccess.style.display = 'flex';
                     clearInterval(paymentCheckInterval);
                     
@@ -659,7 +660,6 @@
                 }
 
                 return await response.json();
-
             } catch (error) {
                 console.error("Ошибка API запроса:", error);
                 throw error;
@@ -674,17 +674,14 @@
                     throw new Error("Не удалось получить ID пользователя");
                 }
 
-                const result = await puzzleApiRequest('sendCommand', {
+                await puzzleApiRequest('sendCommand', {
                     command_name: puzzleBotConfig.commandName,
                     tg_chat_id: userId
                 });
 
-                showNotification("Запрос на оплату отправлен", "success");
-                return result;
-
+                return true;
             } catch (error) {
                 console.error("Ошибка при отправке команды:", error);
-                showNotification("Ошибка при отправке запроса", "error");
                 throw error;
             }
         }
@@ -695,11 +692,14 @@
             setCurrentDate();
             
             // Начинаем проверку статуса оплаты
+            checkPaymentStatus();
             paymentCheckInterval = setInterval(checkPaymentStatus, 1000);
             
             // Обработка кнопки "Вернуться"
             backButton.addEventListener('click', () => {
-                window.location.href = 'index.html';
+                if (!isProcessingPayment) {
+                    window.location.href = 'index.html';
+                }
             });
             
             // Обработка кнопки "Хорошо" на экране успеха
@@ -732,10 +732,37 @@
 
         // Обработка нажатия кнопки оплаты
         async function handlePayment() {
+            if (isProcessingPayment) return;
+            
+            isProcessingPayment = true;
+            
+            // Блокируем кнопки
+            payButton.disabled = true;
+            payButton.classList.add('loading');
+            payButton.textContent = 'Создаем счет...';
+            backButton.disabled = true;
+            
             try {
                 await sendPaymentCommand();
+                
+                // Закрываем окно через 0.5 секунды
+                setTimeout(() => {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.close();
+                    }
+                }, 500);
+                
             } catch (error) {
                 console.error("Ошибка при обработке платежа:", error);
+                
+                // Разблокируем кнопки в случае ошибки
+                setTimeout(() => {
+                    payButton.disabled = false;
+                    payButton.classList.remove('loading');
+                    payButton.textContent = 'Оплатить';
+                    backButton.disabled = false;
+                    isProcessingPayment = false;
+                }, 1000);
             }
         }
 
@@ -754,7 +781,6 @@
             const promoCode = promoCodeInput.value.trim().toUpperCase();
             
             if (promoCode === '') {
-                showNotification("Введите промокод", "error");
                 return;
             }
             
@@ -767,7 +793,6 @@
             
             promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
-                    showNotification("Промокод не существует", "error");
                     promoCodeInput.value = '';
                     return;
                 }
@@ -775,7 +800,6 @@
                 const promoData = snapshot.val();
                 
                 if (promoData.activation === 0) {
-                    showNotification("Промокод исчерпан по активациям", "error");
                     promoCodeInput.value = '';
                     return;
                 }
@@ -784,13 +808,11 @@
                     appliedPromoCode = promoCode;
                     currentDiscount = promoData.price || 0;
                     applyDiscount(currentDiscount, promoCode);
-                    showNotification("Промокод активирован", "success");
                     promoCodeInput.value = '';
                 }
                 
             }).catch((error) => {
                 console.error("Ошибка при проверке промокода:", error);
-                showNotification("Ошибка при проверке промокода", "error");
                 promoCodeInput.value = '';
             });
         }
@@ -830,17 +852,6 @@
         // Обновить итоговую цену
         function updateTotalPrice() {
             totalAmountElement.textContent = `${currentPrice.toLocaleString('ru-RU')} ₽`;
-        }
-
-        // Показать уведомление
-        function showNotification(text, type) {
-            notification.textContent = text;
-            notification.className = `notification ${type}`;
-            notification.style.opacity = 1;
-            
-            setTimeout(() => {
-                notification.style.opacity = 0;
-            }, 2000);
         }
     </script>
 </body>
