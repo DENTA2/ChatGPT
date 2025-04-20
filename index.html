@@ -20,7 +20,6 @@
             --error: #F44336;
             --locked-bg: #F0F0F0;
             --module-label: #666666;
-            --ai-badge: #6e48aa;
         }
 
         * {
@@ -113,32 +112,13 @@
             overflow: hidden;
         }
 
-        .ai-badge {
+        .profile-label {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: var(--ai-badge);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transform: rotate(5deg);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .ai-badge::before {
-            content: "";
-            position: absolute;
-            top: -5px;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            background: var(--ai-badge);
-            transform: translateX(-50%) rotate(45deg);
-            z-index: -1;
+            color: rgba(0, 0, 0, 0.3);
+            font-size: 12px;
+            font-weight: 500;
         }
 
         .avatar {
@@ -386,7 +366,7 @@
     <div id="app-content">
         <!-- Шапка профиля -->
         <div class="profile-header">
-            <div class="ai-badge">AI Powered</div>
+            <div class="profile-label">Профиль</div>
             <div class="avatar" id="user-avatar">
                 <span id="avatar-fallback">U</span>
             </div>
