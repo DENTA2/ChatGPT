@@ -20,6 +20,7 @@
             --error: #F44336;
             --locked-bg: #F0F0F0;
             --module-label: #666666;
+            --ai-badge: #6e48aa;
         }
 
         * {
@@ -108,6 +109,36 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 16px rgba(255, 122, 0, 0.1);
             border: 1px solid rgba(255, 122, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--ai-badge);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transform: rotate(5deg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ai-badge::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: var(--ai-badge);
+            transform: translateX(-50%) rotate(45deg);
+            z-index: -1;
         }
 
         .avatar {
@@ -355,6 +386,7 @@
     <div id="app-content">
         <!-- Шапка профиля -->
         <div class="profile-header">
+            <div class="ai-badge">AI Powered</div>
             <div class="avatar" id="user-avatar">
                 <span id="avatar-fallback">U</span>
             </div>
@@ -429,6 +461,29 @@
             dbRef: null
         };
 
+        // Функция для сохранения ID в cookie
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        // Функция для получения ID из cookie
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i=0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
         // Основная функция
         document.addEventListener('DOMContentLoaded', async () => {
             // Показываем экран загрузки
@@ -499,6 +554,9 @@
             const user = tg.initDataUnsafe.user;
             state.userId = user.id.toString();
             
+            // Сохраняем ID пользователя в cookie
+            setCookie('tg_user_id', state.userId, 30);
+            
             // Устанавливаем данные пользователя
             document.getElementById('user-name-text').textContent = 
                 [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Пользователь';
@@ -523,12 +581,12 @@
         function initTestMode() {
             // Для тестирования без Telegram
             document.getElementById('user-name-text').textContent = 'Тестовый пользователь';
-            document.getElementById('user-id').textContent = '(test-user)';
+            state.userId = getCookie('tg_user_id') || "test-user";
+            document.getElementById('user-id').textContent = `(${state.userId})`;
             document.getElementById('avatar-fallback').textContent = 'T';
             
             const urlParams = new URLSearchParams(window.location.search);
             state.isPaid = urlParams.get('oplata') === '1';
-            state.userId = "test-user";
             
             updateUI();
         }
