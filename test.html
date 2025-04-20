@@ -9,98 +9,123 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             background-color: #f0f0f0;
-            transition: all 0.3s ease;
         }
         
-        .app-container {
+        #floating-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             width: 300px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
+            z-index: 1000;
         }
         
-        .app-header {
+        .window-header {
             background-color: #4285f4;
             color: white;
-            padding: 15px;
-            text-align: center;
-            font-weight: bold;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             cursor: pointer;
         }
         
-        .app-content {
-            padding: 20px;
-            text-align: center;
+        .window-title {
+            font-weight: bold;
         }
         
-        .toggle-btn {
+        .toggle-window-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .window-content {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .window-collapsed {
+            transform: translateY(calc(100% - 40px));
+        }
+        
+        /* Стиль для кнопки, когда окно свернуто */
+        .collapsed-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             background-color: #4285f4;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        
-        .toggle-btn:hover {
-            background-color: #3367d6;
-        }
-        
-        .collapsed {
+            border-radius: 50%;
+            width: 40px;
             height: 40px;
-        }
-        
-        .hidden {
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
             display: none;
         }
     </style>
 </head>
 <body>
-    <div class="app-container" id="appContainer">
-        <div class="app-header" id="appHeader">
-            Мини-приложение
+    <!-- Основное мини-приложение -->
+    <div id="floating-window">
+        <div class="window-header" id="windowHeader">
+            <span class="window-title">Мини-приложение</span>
+            <button class="toggle-window-btn" id="toggleWindowBtn">−</button>
         </div>
-        <div class="app-content" id="appContent">
-            <p>Это содержимое мини-приложения.</p>
-            <p>Здесь может быть любой контент.</p>
-            <button class="toggle-btn" id="toggleBtn">Свернуть</button>
+        <div class="window-content" id="windowContent">
+            <h3>Добро пожаловать!</h3>
+            <p>Это пример мини-приложения, которое можно свернуть.</p>
+            <p>Здесь может быть любой контент: формы, информация, виджеты и т.д.</p>
+            <p>Нажмите кнопку "−" в правом верхнем углу, чтобы свернуть окно.</p>
         </div>
     </div>
 
+    <!-- Кнопка для разворачивания (показывается только когда окно свернуто) -->
+    <button class="collapsed-btn" id="expandWindowBtn">+</button>
+
     <script>
-        const appContainer = document.getElementById('appContainer');
-        const appHeader = document.getElementById('appHeader');
-        const appContent = document.getElementById('appContent');
-        const toggleBtn = document.getElementById('toggleBtn');
+        const floatingWindow = document.getElementById('floating-window');
+        const windowHeader = document.getElementById('windowHeader');
+        const toggleWindowBtn = document.getElementById('toggleWindowBtn');
+        const expandWindowBtn = document.getElementById('expandWindowBtn');
         
-        let isCollapsed = false;
+        let isWindowCollapsed = false;
         
-        // Обработчик клика по заголовку
-        appHeader.addEventListener('click', toggleApp);
+        // Обработчики кликов
+        windowHeader.addEventListener('click', toggleWindow);
+        toggleWindowBtn.addEventListener('click', toggleWindow);
+        expandWindowBtn.addEventListener('click', toggleWindow);
         
-        // Обработчик клика по кнопке
-        toggleBtn.addEventListener('click', toggleApp);
-        
-        function toggleApp() {
-            isCollapsed = !isCollapsed;
+        function toggleWindow(e) {
+            // Предотвращаем всплытие события, если кликнули по кнопке
+            if (e && e.target.classList.contains('toggle-window-btn')) {
+                e.stopPropagation();
+            }
             
-            if (isCollapsed) {
-                appContainer.classList.add('collapsed');
-                appContent.classList.add('hidden');
-                toggleBtn.textContent = 'Развернуть';
+            isWindowCollapsed = !isWindowCollapsed;
+            
+            if (isWindowCollapsed) {
+                // Сворачиваем окно
+                floatingWindow.classList.add('window-collapsed');
+                expandWindowBtn.style.display = 'block';
+                toggleWindowBtn.textContent = '+';
             } else {
-                appContainer.classList.remove('collapsed');
-                appContent.classList.remove('hidden');
-                toggleBtn.textContent = 'Свернуть';
+                // Разворачиваем окно
+                floatingWindow.classList.remove('window-collapsed');
+                expandWindowBtn.style.display = 'none';
+                toggleWindowBtn.textContent = '−';
             }
         }
     </script>
