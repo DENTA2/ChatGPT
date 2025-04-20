@@ -34,41 +34,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             padding: 20px;
             color: var(--dark);
-            position: relative;
-        }
-        
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            align-items: center;
-            background: none;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            color: var(--primary);
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            z-index: 10;
-            padding: 8px 12px;
-            transition: all 0.2s;
-        }
-        
-        .back-button svg {
-            margin-right: 5px;
-            transition: transform 0.2s;
-        }
-        
-        .back-button:hover {
-            background-color: rgba(255, 122, 0, 0.1);
-        }
-        
-        .back-button:hover svg {
-            transform: translateX(-3px);
         }
         
         .container {
@@ -77,13 +44,17 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            position: relative;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+        
+        .content {
+            width: 100%;
         }
         
         .header {
             text-align: center;
             margin-bottom: 20px;
-            margin-top: 60px;
         }
         
         .header h1 {
@@ -98,8 +69,6 @@
             border-radius: 16px;
             padding: 25px;
             margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         
@@ -110,7 +79,6 @@
             margin-bottom: 15px;
             padding-left: 28px;
             position: relative;
-            z-index: 1;
             text-align: left;
         }
         
@@ -121,7 +89,6 @@
             font-size: 15px;
             padding-left: 28px;
             position: relative;
-            z-index: 1;
             text-align: left;
         }
         
@@ -141,7 +108,6 @@
             box-shadow: 0 8px 24px rgba(255, 122, 0, 0.1);
             padding: 30px;
             margin-bottom: 20px;
-            position: relative;
             border: 1px solid rgba(255, 122, 0, 0.1);
         }
         
@@ -235,9 +201,7 @@
         .promo-input-container {
             display: flex;
             margin-bottom: 15px;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
+            width: 90%;
             transition: all 0.3s ease;
         }
         
@@ -328,8 +292,35 @@
             margin-left: 10px;
         }
         
-        .pay-button {
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
             width: 100%;
+        }
+        
+        .back-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 16px;
+            width: 60px;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(255, 122, 0, 0.1);
+        }
+        
+        .pay-button {
+            flex: 1;
             padding: 18px;
             background: linear-gradient(to right, #FFD700, var(--primary));
             color: var(--dark);
@@ -339,7 +330,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 15px;
             box-shadow: 0 4px 12px rgba(255, 166, 0, 0.3);
         }
         
@@ -428,15 +418,6 @@
         }
         
         @media (max-width: 480px) {
-            body {
-                padding: 15px;
-                justify-content: flex-start;
-            }
-            
-            .header {
-                margin-top: 50px;
-            }
-            
             .header h1 {
                 font-size: 24px;
             }
@@ -446,107 +427,123 @@
             }
             
             .promo-input-container {
-                width: 90%;
+                width: 95%;
+            }
+            
+            .buttons-container {
+                gap: 8px;
+            }
+            
+            .back-button {
+                width: 50px;
+                padding: 14px;
+            }
+            
+            .pay-button {
+                padding: 14px 10px;
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <button class="back-button" id="back-button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Вернуться
-    </button>
-
     <div class="container">
-        <div class="header">
-            <h1>Полный доступ курса</h1>
-        </div>
-        
-        <div class="benefits-card">
-            <div class="benefits-title">
-                Что входит в курс:
+        <div class="content">
+            <div class="header">
+                <h1>Полный доступ курса</h1>
             </div>
             
-            <div class="benefit-item">
-                <div class="benefit-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
-                    </svg>
-                </div>
-                Доступ к модулям №1, №2, №3
-            </div>
-            
-            <div class="benefit-item">
-                <div class="benefit-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
-                    </svg>
-                </div>
-                Доступ к видео-роликам курса
-            </div>
-            
-            <div class="benefit-item">
-                <div class="benefit-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
-                    </svg>
-                </div>
-                Доступ к практическим заданиям
-            </div>
-        </div>
-        
-        <div class="receipt-card">
-            <div class="receipt-header">
-                <div class="receipt-label">Расчетная сумма</div>
-                <div class="receipt-date" id="receipt-date"></div>
-            </div>
-            
-            <div class="receipt-content">
-                <div class="receipt-item">
-                    <div class="receipt-item-title">
-                        <div class="receipt-item-bullet"></div>
-                        <span>Полный доступ к курсу</span>
-                    </div>
-                    <span id="base-price">2 990 ₽</span>
+            <div class="benefits-card">
+                <div class="benefits-title">
+                    Что входит в курс:
                 </div>
                 
-                <div class="promo-applied" id="promo-applied">
-                    <span id="promo-text"></span>
-                    <button class="change-promo" id="change-promo">Изменить</button>
-                </div>
-                
-                <div class="receipt-divider"></div>
-                
-                <div class="total">
-                    <span>Итого:</span>
-                    <span id="total-amount">2 990 ₽</span>
-                </div>
-                
-                <div id="promo-link-container">
-                    <a class="promo-link" id="promo-link">
-                        У меня есть промокод
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 17L15 12L10 7V17Z" fill="currentColor"/>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
                         </svg>
-                    </a>
+                    </div>
+                    Доступ к модулям №1, №2, №3
                 </div>
                 
-                <div class="promo-section" id="promo-section">
-                    <div class="promo-input-container">
-                        <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод" maxlength="15">
-                        <button id="apply-button" class="apply-button" disabled>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    Доступ к видео-роликам курса
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    Доступ к практическим заданиям
+                </div>
+            </div>
+            
+            <div class="receipt-card">
+                <div class="receipt-header">
+                    <div class="receipt-label">Расчетная сумма</div>
+                    <div class="receipt-date" id="receipt-date"></div>
+                </div>
+                
+                <div class="receipt-content">
+                    <div class="receipt-item">
+                        <div class="receipt-item-title">
+                            <div class="receipt-item-bullet"></div>
+                            <span>Полный доступ к курсу</span>
+                        </div>
+                        <span id="base-price">2 990 ₽</span>
+                    </div>
+                    
+                    <div class="promo-applied" id="promo-applied">
+                        <span id="promo-text"></span>
+                        <button class="change-promo" id="change-promo">Изменить</button>
+                    </div>
+                    
+                    <div class="receipt-divider"></div>
+                    
+                    <div class="total">
+                        <span>Итого:</span>
+                        <span id="total-amount">2 990 ₽</span>
+                    </div>
+                    
+                    <div id="promo-link-container">
+                        <a class="promo-link" id="promo-link">
+                            У меня есть промокод
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 17L15 12L10 7V17Z" fill="currentColor"/>
                             </svg>
-                        </button>
+                        </a>
+                    </div>
+                    
+                    <div class="promo-section" id="promo-section">
+                        <div class="promo-input-container">
+                            <input type="text" id="promo-code" class="promo-input" placeholder="Введите промокод" maxlength="15">
+                            <button id="apply-button" class="apply-button" disabled>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <button class="pay-button" id="pay-button">Перейти к оплате</button>
+        <div class="buttons-container">
+            <button class="back-button" id="back-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <button class="pay-button" id="pay-button">Оплатить</button>
+        </div>
     </div>
     
     <div class="payment-success" id="payment-success">
@@ -681,7 +678,7 @@
         // Обработка нажатия кнопки оплаты
         function handlePayment() {
             if (!userId) {
-                showNotification("Ошибка: не удалось идентифи��ировать пользователя", "error");
+                showNotification("Ошибка: не удалось идентифицировать пользователя", "error");
                 return;
             }
 
