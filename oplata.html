@@ -9,6 +9,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Все стили остаются без изменений */
         :root {
             --primary: #FF7A00;
             --primary-light: #FF9E40;
@@ -541,44 +542,35 @@
 
         // Обработка нажатия кнопки оплаты
         function handlePayment() {
-            // Ссылка для перехода
             const botLink = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
             
-            // Создаем невидимый iframe для перехода по ссылке
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = botLink;
-            document.body.appendChild(iframe);
+            // 1. Сначала открываем ссылку в новом окне/вкладке
+            const newWindow = window.open(botLink, '_blank');
             
-            // Даем время на обработку перехода
+            // 2. Даем время на обработку перехода (300мс)
             setTimeout(() => {
-                // Проверяем, открыто ли в Telegram WebView
+                // 3. Проверяем, открыто ли в Telegram WebView
                 if (window.Telegram && window.Telegram.WebApp) {
-                    // Закрываем мини-приложение
+                    // 4. Закрываем мини-приложение
                     Telegram.WebApp.close();
-                } else {
-                    // Если не в Telegram, просто переходим по ссылке (дублируем на случай если iframe не сработал)
-                    window.location.href = botLink;
                 }
                 
-                // Удаляем iframe через 1 секунду
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 1000);
+                // 5. На всякий случай дублируем переход
+                if (!newWindow || newWindow.closed) {
+                    window.location.href = botLink;
+                }
             }, 300);
         }
 
-        // Переключение состояния кнопки "Применить"
+        // Остальные функции остаются без изменений
         function toggleApplyButton() {
             applyButton.disabled = promoCodeInput.value.trim().length === 0;
         }
 
-        // Показ/скрытие секции промокода
         function togglePromoSection() {
             promoSection.classList.toggle('active');
         }
 
-        // Применить промокод
         function applyPromoCode() {
             const promoCode = promoCodeInput.value.trim();
             
@@ -590,7 +582,6 @@
             checkPromoCode(promoCode);
         }
 
-        // Проверка промокода в Firebase
         function checkPromoCode(promoCode) {
             const promoRef = database.ref('promo/' + promoCode);
             
@@ -609,13 +600,11 @@
                     return;
                 }
                 
-                // Промокод действителен, применяем скидку
                 appliedPromoCode = promoCode;
                 currentDiscount = promoData.discount;
                 applyDiscount(currentDiscount, promoCode);
                 showNotification("Промокод активирован", "success");
                 
-                // Очищаем и скрываем поле ввода промокода
                 promoCodeInput.value = '';
                 promoSection.classList.remove('active');
                 promoLinkContainer.style.display = 'none';
@@ -627,46 +616,31 @@
             });
         }
 
-        // Применить скидку
         function applyDiscount(discount, promoCode) {
             currentPrice = originalPrice - discount;
-            
-            // Показываем примененный промокод
             promoApplied.style.display = 'flex';
             promoText.textContent = `Промокод "${promoCode}" (скидка -${discount} ₽)`;
-            
-            // Обновляем итоговую сумму
             updateTotalPrice();
         }
 
-        // Сбросить промокод
         function resetPromoCode() {
             currentDiscount = 0;
             currentPrice = originalPrice;
             appliedPromoCode = '';
-            
-            // Скрываем примененный промокод
             promoApplied.style.display = 'none';
-            
-            // Показываем ссылку на промокод
             promoLinkContainer.style.display = 'block';
-            
-            // Обновляем итоговую сумму
             updateTotalPrice();
         }
 
-        // Обновить итоговую цену
         function updateTotalPrice() {
             totalAmountElement.textContent = `${currentPrice.toLocaleString('ru-RU')} ₽`;
         }
 
-        // Показать уведомление
         function showNotification(text, type) {
             notification.textContent = text;
             notification.className = `notification ${type}`;
             notification.style.opacity = 1;
             
-            // Скрываем уведомление через 2 секунды
             setTimeout(() => {
                 notification.style.opacity = 0;
             }, 2000);
