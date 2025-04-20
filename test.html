@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запуск команды</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Запуск команды</h2>
+        <button id="runBtn">Выполнить команду "1"</button>
+        <div id="output">Нажмите кнопку для выполнения команды...</div>
+    </div>
+
+    <script>
+        // Конфигурация
+        const config = {
+            apiToken: 'Xer726MfatevnjQzPJaP4TfPSd7dd1HN',
+            commandName: '1' // Название команды для отправки
+        };
+
+        // Элементы DOM
+        const runBtn = document.getElementById('runBtn');
+        const output = document.getElementById('output');
+
+        // Функция для вывода сообщений
+        function log(message, isError = false) {
+            output.innerHTML += `<div class="${isError ? 'error' : ''}">${message}</div>`;
+            console.log(message);
+        }
+
+        // Очистка вывода
+        function clearLog() {
+            output.innerHTML = '';
+        }
+
+        // Получение user_id из Telegram WebApp
+        function getUserId() {
+            if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+                return Telegram.WebApp.initDataUnsafe.user.id;
+            }
+            return prompt("Введите ваш Telegram User ID (для теста):") || 0;
+        }
+
+        // API-запрос к Puzzle Bot
+        async function puzzleApiRequest(method, params = {}) {
+            const url = new URL('https://api.puzzlebot.top/');
+            url.searchParams.append('token', config.apiToken);
+            url.searchParams.append('method', method);
+
+            // Добавляем параметры
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    url.searchParams.append(key, value);
+                }
+            });
+
+            try {
+                log(`Отправка запроса: ${method}...`);
+                
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                log(`Ответ API: ${JSON.stringify(data, null, 2)}`);
+                return data;
+
+            } catch (error) {
+                log(`Ошибка API: ${error.message}`, true);
+                throw error;
+            }
+        }
+
+        // Отправка команды пользователю
+        async function sendCommandToUser() {
+            try {
+                clearLog();
+                const userId = getUserId();
+                log(`User ID: ${userId}`);
+
+                const result = await puzzleApiRequest('sendCommand', {
+                    command_name: config.commandName,
+                    tg_chat_id: userId // Используем user_id как chat_id для личных сообщений
+                });
+
+                log(`Команда "${config.commandName}" успешно отправлена!`, false);
+                return result;
+
+            } catch (error) {
+                log(`Ошибка при отправке команды: ${error.message}`, true);
+                throw error;
+            }
+        }
+
+        // Основная функция
+        runBtn.addEventListener('click', async () => {
+            try {
+                await sendCommandToUser();
+            } catch (error) {
+                log(`Глобальная ошибка: ${error.message}`, true);
+            }
+        });
+
+        // Инициализация Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+            log("Telegram WebApp инициализирован");
+        }
+    </script>
+</body>
+</html>
