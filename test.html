@@ -3,131 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мини-приложение</title>
+    <title>Мини-приложение (закрывающееся)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            text-align: center;
         }
-        
-        #floating-window {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+
+        /* Стили мини-приложения */
+        .mini-app {
             width: 300px;
-            background-color: white;
+            margin: 20px auto;
+            background: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease;
-            z-index: 1000;
+            padding: 20px;
+            position: relative;
         }
-        
-        .window-header {
-            background-color: #4285f4;
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4444;
             color: white;
-            padding: 12px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
             cursor: pointer;
-        }
-        
-        .window-title {
             font-weight: bold;
         }
-        
-        .toggle-window-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 5px;
-        }
-        
-        .window-content {
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .window-collapsed {
-            transform: translateY(calc(100% - 40px));
-        }
-        
-        /* Стиль для кнопки, когда окно свернуто */
-        .collapsed-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #4285f4;
+
+        .open-btn {
+            background: #4285f4;
             color: white;
             border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: none;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <!-- Основное мини-приложение -->
-    <div id="floating-window">
-        <div class="window-header" id="windowHeader">
-            <span class="window-title">Мини-приложение</span>
-            <button class="toggle-window-btn" id="toggleWindowBtn">−</button>
-        </div>
-        <div class="window-content" id="windowContent">
-            <h3>Добро пожаловать!</h3>
-            <p>Это пример мини-приложения, которое можно свернуть.</p>
-            <p>Здесь может быть любой контент: формы, информация, виджеты и т.д.</p>
-            <p>Нажмите кнопку "−" в правом верхнем углу, чтобы свернуть окно.</p>
-        </div>
+    <!-- Мини-приложение -->
+    <div class="mini-app" id="miniApp">
+        <button class="close-btn" id="closeBtn">×</button>
+        <h2>Моё мини-приложение</h2>
+        <p>Это контент приложения. Нажмите крестик, чтобы закрыть.</p>
     </div>
 
-    <!-- Кнопка для разворачивания (показывается только когда окно свернуто) -->
-    <button class="collapsed-btn" id="expandWindowBtn">+</button>
+    <!-- Кнопка для открытия (изначально скрыта) -->
+    <button class="open-btn hidden" id="openBtn">Открыть приложение</button>
 
     <script>
-        const floatingWindow = document.getElementById('floating-window');
-        const windowHeader = document.getElementById('windowHeader');
-        const toggleWindowBtn = document.getElementById('toggleWindowBtn');
-        const expandWindowBtn = document.getElementById('expandWindowBtn');
-        
-        let isWindowCollapsed = false;
-        
-        // Обработчики кликов
-        windowHeader.addEventListener('click', toggleWindow);
-        toggleWindowBtn.addEventListener('click', toggleWindow);
-        expandWindowBtn.addEventListener('click', toggleWindow);
-        
-        function toggleWindow(e) {
-            // Предотвращаем всплытие события, если кликнули по кнопке
-            if (e && e.target.classList.contains('toggle-window-btn')) {
-                e.stopPropagation();
-            }
-            
-            isWindowCollapsed = !isWindowCollapsed;
-            
-            if (isWindowCollapsed) {
-                // Сворачиваем окно
-                floatingWindow.classList.add('window-collapsed');
-                expandWindowBtn.style.display = 'block';
-                toggleWindowBtn.textContent = '+';
-            } else {
-                // Разворачиваем окно
-                floatingWindow.classList.remove('window-collapsed');
-                expandWindowBtn.style.display = 'none';
-                toggleWindowBtn.textContent = '−';
-            }
-        }
+        const miniApp = document.getElementById('miniApp');
+        const closeBtn = document.getElementById('closeBtn');
+        const openBtn = document.getElementById('openBtn');
+
+        // Закрытие приложения
+        closeBtn.addEventListener('click', () => {
+            miniApp.classList.add('hidden');
+            openBtn.classList.remove('hidden'); // Показываем кнопку "Открыть"
+        });
+
+        // Открытие приложения
+        openBtn.addEventListener('click', () => {
+            miniApp.classList.remove('hidden');
+            openBtn.classList.add('hidden'); // Скрываем кнопку "Открыть"
+        });
     </script>
 </body>
 </html>
