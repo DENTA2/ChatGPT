@@ -463,6 +463,39 @@
             }, 500);
         }
 
+        // Функция для инициализации промокодов
+        async function initPromoCodes() {
+            return new Promise((resolve) => {
+                const promoCodesRef = database.ref('promo');
+                
+                promoCodesRef.once('value').then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        // Создаем структуру промокодов
+                        const defaultPromoCodes = {
+                            TEST1: { activation: 0, price: 0 },
+                            TEST2: { activation: 0, price: 0 },
+                            TEST3: { activation: 0, price: 0 }
+                        };
+                        
+                        promoCodesRef.set(defaultPromoCodes)
+                            .then(() => {
+                                console.log('Промокоды инициализированы');
+                                resolve();
+                            })
+                            .catch((error) => {
+                                console.error('Ошибка при создании промокодов:', error);
+                                resolve();
+                            });
+                    } else {
+                        resolve();
+                    }
+                }).catch((error) => {
+                    console.error('Ошибка при проверке промокодов:', error);
+                    resolve();
+                });
+            });
+        }
+
         // Основная функция
         document.addEventListener('DOMContentLoaded', async () => {
             // Показываем экран загрузки
@@ -478,6 +511,9 @@
                 Telegram.WebApp.expand();
                 Telegram.WebApp.enableClosingConfirmation();
             }
+
+            // Инициализируем промокоды
+            await initPromoCodes();
 
             if (window.Telegram?.WebApp) {
                 await initTelegramApp();
