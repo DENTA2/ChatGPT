@@ -20,6 +20,7 @@
             --error: #F44336;
             --card-gray: #f0f0f0;
             --disabled: #CCCCCC;
+            --receipt-bg: #FFF9E6;
         }
         
         * {
@@ -72,8 +73,6 @@
             font-weight: 600;
             color: var(--primary);
             margin-bottom: 15px;
-            padding-left: 28px;
-            position: relative;
             text-align: left;
         }
         
@@ -98,7 +97,7 @@
         }
         
         .receipt-card {
-            background: var(--white);
+            background: var(--receipt-bg);
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(255, 122, 0, 0.1);
             padding: 25px;
@@ -168,7 +167,7 @@
             color: var(--primary-light);
             font-size: 16px;
             letter-spacing: 3px;
-            background: var(--white);
+            background: var(--receipt-bg);
             padding: 0 10px;
         }
         
@@ -411,6 +410,32 @@
             transform: translateY(-2px);
         }
         
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 80%;
+            text-align: center;
+            font-size: 15px;
+        }
+        
+        .notification.success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .notification.error {
+            background-color: var(--error);
+            color: white;
+        }
+        
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
             40% {transform: translateY(-20px);}
@@ -546,6 +571,8 @@
         <button class="success-button" id="success-button">Вернуться в меню</button>
     </div>
 
+    <div class="notification" id="notification"></div>
+
     <script>
         // Инициализация Firebase
         const firebaseConfig = {
@@ -584,6 +611,7 @@
         const successButton = document.getElementById('success-button');
         const receiptDate = document.getElementById('receipt-date');
         const mainContainer = document.getElementById('main-container');
+        const notification = document.getElementById('notification');
         
         // Цены
         const originalPrice = 2990;
@@ -632,6 +660,27 @@
                     paymentRef.off();
                 }
             });
+        }
+
+        // Проверяем статус оплаты при загрузке страницы
+        async function checkInitialPaymentStatus() {
+            userId = getUserIdFromCookie();
+            if (!userId) return;
+
+            try {
+                const snapshot = await database.ref(`users/${userId}/oplata`).once('value');
+                if (snapshot.val() === 1) {
+                    mainContainer.style.display = 'none';
+                    paymentSuccess.style.display = 'flex';
+                } else {
+                    mainContainer.style.display = 'flex';
+                    paymentSuccess.style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Ошибка при проверке статуса оплаты:", error);
+                mainContainer.style.display = 'flex';
+                paymentSuccess.style.display = 'none';
+            }
         }
 
         // API-запрос к Puzzle Bot
@@ -686,13 +735,23 @@
             }
         }
 
+        // Показать уведомление
+        function showNotification(text, type) {
+            notification.textContent = text;
+            notification.className = `notification ${type}`;
+            notification.style.opacity = 1;
+            
+            setTimeout(() => {
+                notification.style.opacity = 0;
+            }, 2000);
+        }
+
         // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            userId = getUserIdFromCookie();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkInitialPaymentStatus();
             setCurrentDate();
             
             // Начинаем проверку статуса оплаты
-            checkPaymentStatus();
             paymentCheckInterval = setInterval(checkPaymentStatus, 1000);
             
             // Обработка кнопки "Вернуться"
@@ -754,6 +813,7 @@
                 
             } catch (error) {
                 console.error("Ошибка при обработке платежа:", error);
+                showNotification("Ошибка при создании счета", "error");
                 
                 // Разблокируем кнопки в случае ошибки
                 setTimeout(() => {
@@ -781,6 +841,7 @@
             const promoCode = promoCodeInput.value.trim().toUpperCase();
             
             if (promoCode === '') {
+                showNotification("Введите промокод", "error");
                 return;
             }
             
@@ -793,6 +854,7 @@
             
             promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
+                    showNotification("Промокод не существует", "error");
                     promoCodeInput.value = '';
                     return;
                 }
@@ -800,6 +862,7 @@
                 const promoData = snapshot.val();
                 
                 if (promoData.activation === 0) {
+                    showNotification("Промокод исчерпан", "error");
                     promoCodeInput.value = '';
                     return;
                 }
@@ -808,11 +871,13 @@
                     appliedPromoCode = promoCode;
                     currentDiscount = promoData.price || 0;
                     applyDiscount(currentDiscount, promoCode);
+                    showNotification("Промокод успешно применен", "success");
                     promoCodeInput.value = '';
                 }
                 
             }).catch((error) => {
                 console.error("Ошибка при проверке промокода:", error);
+                showNotification("Ошибка при проверке промокода", "error");
                 promoCodeInput.value = '';
             });
         }
