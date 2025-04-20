@@ -760,7 +760,7 @@
 
             // 2. Попытка закрыть через редирект (для браузеров)
             try {
-                window.location.href = "https://t.me/your_bot_username";
+                window.location.href = "https://t.me";
                 setTimeout(() => {
                     window.close();
                 }, 100);
@@ -774,7 +774,6 @@
                     window.close();
                 } catch (e) {
                     console.error("Ошибка при закрытии окна:", e);
-                    showNotification("Счет создан! Вернитесь в чат", "success");
                 }
             }, 500);
         }
@@ -842,7 +841,6 @@
                 
             } catch (error) {
                 console.error("Ошибка при обработке платежа:", error);
-                showNotification("Ошибка при создании счета", "error");
                 
                 // Разблокируем кнопки в случае ошибки
                 setTimeout(() => {
