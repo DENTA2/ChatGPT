@@ -541,30 +541,31 @@
 
         // Обработка нажатия кнопки оплаты
         function handlePayment() {
-            // Проверяем, открыто ли в Telegram WebView
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Можно передать данные перед закрытием, если нужно
-                const paymentData = {
-                    amount: currentPrice,
-                    promoCode: appliedPromoCode,
-                    timestamp: new Date().toISOString()
-                };
-                
-                try {
-                    // Отправляем данные в основное приложение
-                    Telegram.WebApp.sendData(JSON.stringify(paymentData));
-                    
+            // Ссылка для перехода
+            const botLink = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
+            
+            // Создаем невидимый iframe для перехода по ссылке
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = botLink;
+            document.body.appendChild(iframe);
+            
+            // Даем время на обработку перехода
+            setTimeout(() => {
+                // Проверяем, открыто ли в Telegram WebView
+                if (window.Telegram && window.Telegram.WebApp) {
                     // Закрываем мини-приложение
                     Telegram.WebApp.close();
-                } catch (e) {
-                    console.error("Ошибка при закрытии WebApp:", e);
-                    // Если не получилось закрыть через API, пробуем перейти по ссылке
-                    window.location.href = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
+                } else {
+                    // Если не в Telegram, просто переходим по ссылке (дублируем на случай если iframe не сработал)
+                    window.location.href = botLink;
                 }
-            } else {
-                // Если не в Telegram, просто переходим по ссылке
-                window.location.href = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
-            }
+                
+                // Удаляем iframe через 1 секунду
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 1000);
+            }, 300);
         }
 
         // Переключение состояния кнопки "Применить"
@@ -585,7 +586,8 @@
                 showNotification("Введите промокод", "error");
                 return;
             }
-                checkPromoCode(promoCode);
+            
+            checkPromoCode(promoCode);
         }
 
         // Проверка промокода в Firebase
