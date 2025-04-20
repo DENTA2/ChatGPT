@@ -108,17 +108,6 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 16px rgba(255, 122, 0, 0.1);
             border: 1px solid rgba(255, 122, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .profile-label {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: rgba(0, 0, 0, 0.3);
-            font-size: 12px;
-            font-weight: 500;
         }
 
         .avatar {
@@ -366,7 +355,6 @@
     <div id="app-content">
         <!-- Шапка профиля -->
         <div class="profile-header">
-            <div class="profile-label">Профиль</div>
             <div class="avatar" id="user-avatar">
                 <span id="avatar-fallback">U</span>
             </div>
@@ -438,7 +426,8 @@
         const state = {
             userId: null,
             isPaid: false,
-            dbRef: null
+            dbRef: null,
+            isLoaded: false
         };
 
         // Функция для сохранения ID в cookie
@@ -464,6 +453,16 @@
             return null;
         }
 
+        // Функция для скрытия экрана загрузки
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                document.getElementById('app-content').style.opacity = '1';
+            }, 500);
+        }
+
         // Основная функция
         document.addEventListener('DOMContentLoaded', async () => {
             // Показываем экран загрузки
@@ -472,21 +471,23 @@
             
             // Инициализируем модальные окна
             initModals();
-            
-            // Запускаем таймер для скрытия экрана загрузки
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                    document.getElementById('app-content').style.opacity = '1';
-                }, 500); // Время для fade-out анимации
-            }, 1000); // Общее время загрузки - 1 секунда
+
+            // Убираем стандартную заставку Telegram
+            if (window.Telegram?.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+                Telegram.WebApp.enableClosingConfirmation();
+            }
 
             if (window.Telegram?.WebApp) {
-                initTelegramApp();
+                await initTelegramApp();
             } else {
-                initTestMode();
+                await initTestMode();
             }
+
+            // Помечаем, что загрузка завершена
+            state.isLoaded = true;
+            hideLoadingScreen();
         });
 
         function initModals() {
@@ -547,18 +548,35 @@
             // Аватар
             const avatarElement = document.getElementById('user-avatar');
             if (user.photo_url) {
-                avatarElement.innerHTML = `<img src="${user.photo_url}" alt="Аватар">`;
+                const img = new Image();
+                img.src = user.photo_url;
+                img.onload = () => {
+                    avatarElement.innerHTML = '';
+                    avatarElement.appendChild(img);
+                    checkAllLoaded();
+                };
+                img.onerror = () => {
+                    const fallback = user.first_name?.charAt(0).toUpperCase() || 'U';
+                    document.getElementById('avatar-fallback').textContent = fallback;
+                    checkAllLoaded();
+                };
             } else {
                 const fallback = user.first_name?.charAt(0).toUpperCase() || 'U';
                 document.getElementById('avatar-fallback').textContent = fallback;
+                checkAllLoaded();
             }
 
             // Инициализируем слушатель изменений в БД
-            initDatabaseListener();
-            tg.expand();
+            await initDatabaseListener();
         }
 
-        function initTestMode() {
+        function checkAllLoaded() {
+            if (state.userId && state.isLoaded) {
+                hideLoadingScreen();
+            }
+        }
+
+        async function initTestMode() {
             // Для тестирования без Telegram
             document.getElementById('user-name-text').textContent = 'Тестовый пользователь';
             state.userId = getCookie('tg_user_id') || "test-user";
@@ -568,43 +586,48 @@
             const urlParams = new URLSearchParams(window.location.search);
             state.isPaid = urlParams.get('oplata') === '1';
             
-            updateUI();
+            await updateUI();
         }
 
-        function initDatabaseListener() {
-            state.dbRef = database.ref('users/' + state.userId + '/oplata');
-            
-            // Обработчик изменений
-            state.dbRef.on('value', (snapshot) => {
-                const oplata = snapshot.val();
-                state.isPaid = oplata === 1;
-                updateUI();
-            });
+        async function initDatabaseListener() {
+            return new Promise((resolve) => {
+                state.dbRef = database.ref('users/' + state.userId + '/oplata');
+                
+                // Обработчик изменений
+                state.dbRef.on('value', (snapshot) => {
+                    const oplata = snapshot.val();
+                    state.isPaid = oplata === 1;
+                    updateUI().then(resolve);
+                });
 
-            // Создаем запись пользователя если не существует
-            database.ref('users/' + state.userId).once('value').then((snapshot) => {
-                if (!snapshot.exists()) {
-                    database.ref('users/' + state.userId).set({
-                        name: document.getElementById('user-name-text').textContent,
-                        oplata: 0
-                    });
+                // Создаем запись пользователя если не существует
+                database.ref('users/' + state.userId).once('value').then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        database.ref('users/' + state.userId).set({
+                            name: document.getElementById('user-name-text').textContent,
+                            oplata: 0
+                        });
+                    }
+                });
+            });
+        }
+
+        async function updateUI() {
+            return new Promise((resolve) => {
+                // Обновляем статус доступа
+                const statusElement = document.getElementById('access-status');
+                if (state.isPaid) {
+                    statusElement.textContent = "Полный доступ";
+                    statusElement.style.color = "var(--primary)";
+                } else {
+                    statusElement.textContent = "Демо просмотр";
+                    statusElement.style.color = "#666";
                 }
+
+                // Рендерим модули
+                renderModules(false);
+                resolve();
             });
-        }
-
-        function updateUI() {
-            // Обновляем статус доступа
-            const statusElement = document.getElementById('access-status');
-            if (state.isPaid) {
-                statusElement.textContent = "Полный доступ";
-                statusElement.style.color = "var(--primary)";
-            } else {
-                statusElement.textContent = "Демо просмотр";
-                statusElement.style.color = "#666";
-            }
-
-            // Рендерим модули (без анимации при обновлении)
-            renderModules(false);
         }
 
         function renderModules(withAnimation = true) {
