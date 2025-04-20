@@ -1,1 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-приложение</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            transition: all 0.3s ease;
+        }
+        
+        .app-container {
+            width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .app-header {
+            background-color: #4285f4;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .app-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .toggle-btn {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .toggle-btn:hover {
+            background-color: #3367d6;
+        }
+        
+        .collapsed {
+            height: 40px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <div class="app-header" id="appHeader">
+            Мини-приложение
+        </div>
+        <div class="app-content" id="appContent">
+            <p>Это содержимое мини-приложения.</p>
+            <p>Здесь может быть любой контент.</p>
+            <button class="toggle-btn" id="toggleBtn">Свернуть</button>
+        </div>
+    </div>
 
+    <script>
+        const appContainer = document.getElementById('appContainer');
+        const appHeader = document.getElementById('appHeader');
+        const appContent = document.getElementById('appContent');
+        const toggleBtn = document.getElementById('toggleBtn');
+        
+        let isCollapsed = false;
+        
+        // Обработчик клика по заголовку
+        appHeader.addEventListener('click', toggleApp);
+        
+        // Обработчик клика по кнопке
+        toggleBtn.addEventListener('click', toggleApp);
+        
+        function toggleApp() {
+            isCollapsed = !isCollapsed;
+            
+            if (isCollapsed) {
+                appContainer.classList.add('collapsed');
+                appContent.classList.add('hidden');
+                toggleBtn.textContent = 'Развернуть';
+            } else {
+                appContainer.classList.remove('collapsed');
+                appContent.classList.remove('hidden');
+                toggleBtn.textContent = 'Свернуть';
+            }
+        }
+    </script>
+</body>
+</html>
