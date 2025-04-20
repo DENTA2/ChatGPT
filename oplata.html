@@ -100,8 +100,8 @@
             background: var(--white);
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(255, 122, 0, 0.1);
-            padding: 30px;
-            margin-bottom: 20px;
+            padding: 25px;
+            margin-bottom: 10px;
             border: 1px solid rgba(255, 122, 0, 0.1);
         }
         
@@ -189,20 +189,20 @@
         
         .promo-section.active {
             display: block;
-            max-height: 100px;
-            margin-bottom: 20px;
+            max-height: 80px;
+            margin-bottom: 5px;
         }
         
         .promo-input-container {
             display: flex;
-            margin-bottom: 15px;
-            width: 80%;
+            margin-bottom: 10px;
+            width: 60%;
             transition: all 0.3s ease;
         }
         
         .promo-input {
             flex: 1;
-            padding: 14px 15px;
+            padding: 12px 15px;
             border: 2px solid #FFE0B2;
             border-radius: 10px 0 0 10px;
             font-size: 15px;
@@ -291,6 +291,7 @@
             display: flex;
             gap: 10px;
             width: 100%;
+            margin-top: 10px;
         }
         
         .back-button {
@@ -421,7 +422,7 @@
             }
             
             .promo-input-container {
-                width: 85%;
+                width: 70%;
             }
             
             .buttons-container {
@@ -578,7 +579,6 @@
         const paymentSuccess = document.getElementById('payment-success');
         const successButton = document.getElementById('success-button');
         const receiptDate = document.getElementById('receipt-date');
-        const buttonsContainer = document.getElementById('buttons-container');
         
         // Цены
         const originalPrice = 2990;
@@ -713,32 +713,30 @@
             promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
                     showNotification("Промокод не существует", "error");
+                    promoCodeInput.value = '';
                     return;
                 }
                 
                 const promoData = snapshot.val();
                 
-                if (promoData.activations === 0) {
-                    showNotification("Исчерпан по активациям", "error");
+                if (promoData.activation === 0) {
+                    showNotification("Промокод исчерпан по активациям", "error");
+                    promoCodeInput.value = '';
                     return;
                 }
                 
-                if (promoData.activations >= 1) {
+                if (promoData.activation > 0) {
                     appliedPromoCode = promoCode;
-                    currentDiscount = promoData.discount;
+                    currentDiscount = promoData.price || 0;
                     applyDiscount(currentDiscount, promoCode);
-                    showNotification("Активирован", "success");
-                    
-                    // Очищаем и скрываем поле ввода промокода
+                    showNotification("Промокод активирован", "success");
                     promoCodeInput.value = '';
-                    promoSection.classList.remove('active');
-                    promoLinkContainer.style.display = 'none';
-                    applyButton.disabled = true;
                 }
                 
             }).catch((error) => {
                 console.error("Ошибка при проверке промокода:", error);
                 showNotification("Ошибка при проверке промокода", "error");
+                promoCodeInput.value = '';
             });
         }
 
@@ -749,6 +747,10 @@
             // Показываем примененный промокод
             promoApplied.style.display = 'flex';
             promoText.textContent = `Промокод "${promoCode}" (скидка -${discount} ₽)`;
+            
+            // Скрываем поле ввода промокода
+            promoSection.classList.remove('active');
+            promoLinkContainer.style.display = 'none';
             
             // Обновляем итоговую сумму
             updateTotalPrice();
