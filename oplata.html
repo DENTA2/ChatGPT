@@ -585,7 +585,6 @@
             appId: "1:622297225288:web:5df6a5b02ffddedd96e07d"
         };
 
-        // Инициализируем Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -595,22 +594,21 @@
             commandName: 'Оплата2990'
         };
 
-        // DOM элементы
+        // Основные DOM элементы
+        const payButton = document.getElementById('pay-button');
         const backButton = document.getElementById('back-button');
         const promoLink = document.getElementById('promo-link');
-        const promoLinkContainer = document.getElementById('promo-link-container');
         const promoSection = document.getElementById('promo-section');
         const promoCodeInput = document.getElementById('promo-code');
         const applyButton = document.getElementById('apply-button');
         const promoApplied = document.getElementById('promo-applied');
         const promoText = document.getElementById('promo-text');
-        const totalAmountElement = document.getElementById('total-amount');
         const changePromoBtn = document.getElementById('change-promo');
-        const payButton = document.getElementById('pay-button');
-        const paymentSuccess = document.getElementById('payment-success');
-        const successButton = document.getElementById('success-button');
+        const totalAmountElement = document.getElementById('total-amount');
         const receiptDate = document.getElementById('receipt-date');
         const mainContainer = document.getElementById('main-container');
+        const paymentSuccess = document.getElementById('payment-success');
+        const successButton = document.getElementById('success-button');
         const notification = document.getElementById('notification');
         
         // Цены
@@ -651,12 +649,9 @@
                 const status = snapshot.val();
                 
                 if (status === 1) {
-                    // Показываем экран успешной оплаты
                     mainContainer.style.display = 'none';
                     paymentSuccess.style.display = 'flex';
                     clearInterval(paymentCheckInterval);
-                    
-                    // Обновляем статус в базе данных
                     paymentRef.off();
                 }
             });
@@ -672,67 +667,78 @@
                 if (snapshot.val() === 1) {
                     mainContainer.style.display = 'none';
                     paymentSuccess.style.display = 'flex';
-                } else {
-                    mainContainer.style.display = 'flex';
-                    paymentSuccess.style.display = 'none';
                 }
             } catch (error) {
                 console.error("Ошибка при проверке статуса оплаты:", error);
-                mainContainer.style.display = 'flex';
-                paymentSuccess.style.display = 'none';
             }
         }
 
-        // API-запрос к Puzzle Bot
-        async function puzzleApiRequest(method, params = {}) {
+        // Надежная функция закрытия WebApp
+        function closeMiniApp() {
+            // 1. Основной способ через Telegram WebApp API
+            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.close) {
+                try {
+                    Telegram.WebApp.close();
+                    return;
+                } catch (e) {
+                    console.error("Ошибка при закрытии через Telegram API:", e);
+                }
+            }
+
+            // 2. Резервный способ через редирект
+            try {
+                window.location.href = "https://t.me";
+                setTimeout(() => {
+                    try {
+                        window.close();
+                    } catch (e) {
+                        console.error("Ошибка при window.close():", e);
+                    }
+                }, 100);
+            } catch (e) {
+                console.error("Ошибка при редиректе:", e);
+            }
+        }
+
+        // Отправка команды без ожидания ответа
+        function sendPaymentCommand() {
+            const userId = getUserIdFromCookie();
+            if (!userId) return;
+
             const url = new URL('https://api.puzzlebot.top/');
             url.searchParams.append('token', puzzleBotConfig.apiToken);
-            url.searchParams.append('method', method);
+            url.searchParams.append('method', 'sendCommand');
+            url.searchParams.append('command_name', puzzleBotConfig.commandName);
+            url.searchParams.append('tg_chat_id', userId);
 
-            // Добавляем параметры
-            Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined) {
-                    url.searchParams.append(key, value);
-                }
-            });
-
-            try {
-                const response = await fetch(url.toString(), {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                return await response.json();
-            } catch (error) {
-                console.error("Ошибка API запроса:", error);
-                throw error;
-            }
+            // Отправляем запрос без ожидания ответа
+            fetch(url.toString(), {
+                method: 'GET',
+                headers: {'Accept': 'application/json'},
+                keepalive: true // Гарантирует отправку даже при закрытии страницы
+            }).catch(() => {}); // Игнорируем ошибки
         }
 
-        // Отправка команды пользователю
-        async function sendPaymentCommand() {
-            try {
-                const userId = getUserIdFromCookie();
-                if (!userId) {
-                    throw new Error("Не удалось получить ID пользователя");
-                }
-
-                await puzzleApiRequest('sendCommand', {
-                    command_name: puzzleBotConfig.commandName,
-                    tg_chat_id: userId
-                });
-
-                return true;
-            } catch (error) {
-                console.error("Ошибка при отправке команды:", error);
-                throw error;
-            }
+        // Обработчик кнопки оплаты
+        function handlePayment() {
+            if (isProcessingPayment) return;
+            
+            isProcessingPayment = true;
+            
+            // Блокируем кнопки
+            payButton.disabled = true;
+            payButton.classList.add('loading');
+            payButton.textContent = 'Создаем счет...';
+            backButton.disabled = true;
+            
+            // 1. Отправляем команду (без ожидания ответа)
+            sendPaymentCommand();
+            
+            // 2. Немедленно закрываем мини-приложение
+            closeMiniApp();
+            
+            // 3. Дополнительная попытка закрытия через 500мс
+            setTimeout(closeMiniApp, 500);
         }
 
         // Показать уведомление
@@ -746,136 +752,60 @@
             }, 2000);
         }
 
-        // Надежное закрытие WebApp
-        function closeWebApp() {
-            // 1. Попытка закрыть через Telegram WebApp API
-            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.close) {
-                try {
-                    Telegram.WebApp.close();
-                    return;
-                } catch (e) {
-                    console.error("Ошибка при закрытии через Telegram.WebApp.close:", e);
-                }
-            }
-
-            // 2. Попытка закрыть через редирект (для браузеров)
-            try {
-                window.location.href = "https://t.me";
-                setTimeout(() => {
-                    window.close();
-                }, 100);
-            } catch (e) {
-                console.error("Ошибка при закрытии через редирект:", e);
-            }
-
-            // 3. Финальная попытка закрыть окно
-            setTimeout(() => {
-                try {
-                    window.close();
-                } catch (e) {
-                    console.error("Ошибка при закрытии окна:", e);
-                }
-            }, 500);
-        }
-
         // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', async () => {
-            await checkInitialPaymentStatus();
+        document.addEventListener('DOMContentLoaded', () => {
+            checkInitialPaymentStatus();
             setCurrentDate();
             
             // Начинаем проверку статуса оплаты
             paymentCheckInterval = setInterval(checkPaymentStatus, 1000);
             
-            // Обработка кнопки "Вернуться"
+            // Обработчики кнопок
+            payButton.addEventListener('click', handlePayment);
             backButton.addEventListener('click', () => {
                 if (!isProcessingPayment) {
                     window.location.href = 'index.html';
                 }
             });
-            
-            // Обработка кнопки "Хорошо" на экране успеха
             successButton.addEventListener('click', () => {
                 window.location.href = 'index.html';
             });
             
-            // Активация кнопки "Применить" при вводе промокода
-            promoCodeInput.addEventListener('input', toggleApplyButton);
+            // Обработчики промокодов
+            promoCodeInput.addEventListener('input', () => {
+                applyButton.disabled = promoCodeInput.value.trim().length === 0;
+            });
             
-            // Обработка нажатия кнопки "Применить"
-            applyButton.addEventListener('click', applyPromoCode);
+            applyButton.addEventListener('click', () => {
+                const promoCode = promoCodeInput.value.trim().toUpperCase();
+                if (promoCode === '') {
+                    showNotification("Введите промокод", "error");
+                    return;
+                }
+                checkPromoCode(promoCode);
+            });
             
-            // Обработка нажатия Enter в поле промокода
             promoCodeInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && promoCodeInput.value.trim().length > 0) {
-                    applyPromoCode();
+                    checkPromoCode(promoCodeInput.value.trim().toUpperCase());
                 }
             });
             
-            // Обработка кнопки "Изменить" промокод
-            changePromoBtn.addEventListener('click', resetPromoCode);
+            promoLink.addEventListener('click', () => {
+                promoSection.classList.toggle('active');
+            });
             
-            // Показываем поле ввода промокода
-            promoLink.addEventListener('click', togglePromoSection);
-            
-            // Обработка кнопки оплаты
-            payButton.addEventListener('click', handlePayment);
+            changePromoBtn.addEventListener('click', () => {
+                currentDiscount = 0;
+                currentPrice = originalPrice;
+                appliedPromoCode = '';
+                promoApplied.style.display = 'none';
+                promoLinkContainer.style.display = 'block';
+                updateTotalPrice();
+            });
         });
 
-        // Обработка нажатия кнопки оплаты
-        async function handlePayment() {
-            if (isProcessingPayment) return;
-            
-            isProcessingPayment = true;
-            
-            // Блокируем кнопки
-            payButton.disabled = true;
-            payButton.classList.add('loading');
-            payButton.textContent = 'Создаем счет...';
-            backButton.disabled = true;
-            
-            try {
-                await sendPaymentCommand();
-                
-                // Закрываем WebApp
-                closeWebApp();
-                
-            } catch (error) {
-                console.error("Ошибка при обработке платежа:", error);
-                
-                // Разблокируем кнопки в случае ошибки
-                setTimeout(() => {
-                    payButton.disabled = false;
-                    payButton.classList.remove('loading');
-                    payButton.textContent = 'Оплатить';
-                    backButton.disabled = false;
-                    isProcessingPayment = false;
-                }, 1000);
-            }
-        }
-
-        // Переключение состояния кнопки "Применить"
-        function toggleApplyButton() {
-            applyButton.disabled = promoCodeInput.value.trim().length === 0;
-        }
-
-        // Показ/скрытие секции промокода
-        function togglePromoSection() {
-            promoSection.classList.toggle('active');
-        }
-
-        // Применить промокод
-        function applyPromoCode() {
-            const promoCode = promoCodeInput.value.trim().toUpperCase();
-            
-            if (promoCode === '') {
-                showNotification("Введите промокод", "error");
-                return;
-            }
-            
-            checkPromoCode(promoCode);
-        }
-
-        // Проверка промокода в Firebase
+        // Проверка промокода
         function checkPromoCode(promoCode) {
             const promoRef = database.ref('promo/' + promoCode);
             
@@ -894,13 +824,17 @@
                     return;
                 }
                 
-                if (promoData.activation > 0) {
-                    appliedPromoCode = promoCode;
-                    currentDiscount = promoData.price || 0;
-                    applyDiscount(currentDiscount, promoCode);
-                    showNotification("Промокод успешно применен", "success");
-                    promoCodeInput.value = '';
-                }
+                appliedPromoCode = promoCode;
+                currentDiscount = promoData.price || 0;
+                currentPrice = originalPrice - currentDiscount;
+                
+                promoApplied.style.display = 'flex';
+                promoText.textContent = `Промокод "${promoCode}" (скидка -${currentDiscount} ₽)`;
+                promoSection.classList.remove('active');
+                promoLinkContainer.style.display = 'none';
+                promoCodeInput.value = '';
+                updateTotalPrice();
+                showNotification("Промокод успешно применен", "success");
                 
             }).catch((error) => {
                 console.error("Ошибка при проверке промокода:", error);
@@ -909,39 +843,7 @@
             });
         }
 
-        // Применить скидку
-        function applyDiscount(discount, promoCode) {
-            currentPrice = originalPrice - discount;
-            
-            // Показываем примененный промокод
-            promoApplied.style.display = 'flex';
-            promoText.textContent = `Промокод "${promoCode}" (скидка -${discount} ₽)`;
-            
-            // Скрываем поле ввода промокода
-            promoSection.classList.remove('active');
-            promoLinkContainer.style.display = 'none';
-            
-            // Обновляем итоговую сумму
-            updateTotalPrice();
-        }
-
-        // Сбросить промокод
-        function resetPromoCode() {
-            currentDiscount = 0;
-            currentPrice = originalPrice;
-            appliedPromoCode = '';
-            
-            // Скрываем примененный промокод
-            promoApplied.style.display = 'none';
-            
-            // Показываем ссылку на промокод
-            promoLinkContainer.style.display = 'block';
-            
-            // Обновляем итоговую сумму
-            updateTotalPrice();
-        }
-
-        // Обновить итоговую цену
+        // Обновление итоговой цены
         function updateTotalPrice() {
             totalAmountElement.textContent = `${currentPrice.toLocaleString('ru-RU')} ₽`;
         }
