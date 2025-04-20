@@ -44,7 +44,6 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            flex-grow: 1;
         }
         
         .header {
@@ -197,13 +196,13 @@
         .promo-input-container {
             display: flex;
             margin-bottom: 15px;
-            width: 100%;
+            width: 80%;
             transition: all 0.3s ease;
         }
         
         .promo-input {
             flex: 1;
-            padding: 14px 20px;
+            padding: 14px 15px;
             border: 2px solid #FFE0B2;
             border-radius: 10px 0 0 10px;
             font-size: 15px;
@@ -213,7 +212,7 @@
         }
         
         .apply-button {
-            padding: 0 15px;
+            padding: 0 12px;
             background-color: #FFC107;
             color: var(--dark);
             border: none;
@@ -225,7 +224,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 50px;
+            min-width: 45px;
         }
         
         .apply-button:disabled {
@@ -291,9 +290,7 @@
         .buttons-container {
             display: flex;
             gap: 10px;
-            margin-top: auto;
             width: 100%;
-            padding-top: 20px;
         }
         
         .back-button {
@@ -421,6 +418,10 @@
             
             .benefits-card, .receipt-card {
                 padding: 20px;
+            }
+            
+            .promo-input-container {
+                width: 85%;
             }
             
             .buttons-container {
@@ -669,42 +670,18 @@
 
         // Обработка нажатия кнопки оплаты
         function handlePayment() {
-            if (!userId) {
-                showNotification("Ошибка: не удалось идентифицировать пользователя", "error");
-                return;
-            }
-
-            // Сохраняем данные о платеже в Firebase
-            const paymentData = {
-                user_id: userId,
-                amount: currentPrice,
-                discount: currentDiscount,
-                promo_code: appliedPromoCode || null,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                status: "pending"
-            };
-
-            const paymentRef = database.ref(`payments/${userId}_${Date.now()}`);
-            paymentRef.set(paymentData)
-                .then(() => {
-                    // Открываем бота для оплаты
-                    const botLink = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
-                    const newWindow = window.open(botLink, '_blank');
-                    
-                    setTimeout(() => {
-                        if (window.Telegram && window.Telegram.WebApp) {
-                            Telegram.WebApp.close();
-                        }
-                        
-                        if (!newWindow || newWindow.closed) {
-                            window.location.href = botLink;
-                        }
-                    }, 300);
-                })
-                .catch((error) => {
-                    console.error("Ошибка при сохранении данных платежа:", error);
-                    showNotification("Ошибка при обработке платежа", "error");
-                });
+            const botLink = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
+            const newWindow = window.open(botLink, '_blank');
+            
+            setTimeout(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.close();
+                }
+                
+                if (!newWindow || newWindow.closed) {
+                    window.location.href = botLink;
+                }
+            }, 300);
         }
 
         // Переключение состояния кнопки "Применить"
@@ -715,12 +692,6 @@
         // Показ/скрытие секции промокода
         function togglePromoSection() {
             promoSection.classList.toggle('active');
-            // Перемещаем кнопки вниз при активации промо-секции
-            if (promoSection.classList.contains('active')) {
-                buttonsContainer.style.marginTop = '0';
-            } else {
-                buttonsContainer.style.marginTop = 'auto';
-            }
         }
 
         // Применить промокод
@@ -737,54 +708,33 @@
 
         // Проверка промокода в Firebase
         function checkPromoCode(promoCode) {
-            const promoRef = database.ref('promo_codes/' + promoCode);
+            const promoRef = database.ref('promo/' + promoCode);
             
             promoRef.once('value').then((snapshot) => {
                 if (!snapshot.exists()) {
-                    showNotification("Промокод не найден", "error");
-                    promoCodeInput.value = '';
+                    showNotification("Промокод не существует", "error");
                     return;
                 }
                 
                 const promoData = snapshot.val();
                 
-                if (!promoData.activations || promoData.activations <= 0) {
-                    showNotification("Промокод исчерпан по активациям", "error");
-                    promoCodeInput.value = '';
+                if (promoData.activations === 0) {
+                    showNotification("Исчерпан по активациям", "error");
                     return;
                 }
                 
-                // Проверяем, не использовал ли уже пользователь этот промокод
-                if (userId && promoData.used_by && promoData.used_by[userId]) {
-                    showNotification("Вы уже использовали этот промокод", "error");
-                    promoCodeInput.value = '';
-                    return;
-                }
-                
-                // Промокод действителен, применяем скидку
-                appliedPromoCode = promoCode;
-                currentDiscount = promoData.discount || 0;
-                applyDiscount(currentDiscount, promoCode);
-                showNotification("Промокод активирован", "success");
-                
-                // Обновляем информацию о промокоде в базе данных
-                if (userId) {
-                    const updates = {};
-                    updates[`promo_codes/${promoCode}/activations`] = (promoData.activations || 0) - 1;
-                    updates[`promo_codes/${promoCode}/used_by/${userId}`] = true;
-                    updates[`users/${userId}/used_promo_codes/${promoCode}`] = true;
+                if (promoData.activations >= 1) {
+                    appliedPromoCode = promoCode;
+                    currentDiscount = promoData.discount;
+                    applyDiscount(currentDiscount, promoCode);
+                    showNotification("Активирован", "success");
                     
-                    database.ref().update(updates).catch(error => {
-                        console.error("Ошибка при обновлении промокода:", error);
-                    });
+                    // Очищаем и скрываем поле ввода промокода
+                    promoCodeInput.value = '';
+                    promoSection.classList.remove('active');
+                    promoLinkContainer.style.display = 'none';
+                    applyButton.disabled = true;
                 }
-                
-                // Очищаем и скрываем поле ввода промокода
-                promoCodeInput.value = '';
-                promoSection.classList.remove('active');
-                promoLinkContainer.style.display = 'none';
-                applyButton.disabled = true;
-                buttonsContainer.style.marginTop = 'auto';
                 
             }).catch((error) => {
                 console.error("Ошибка при проверке промокода:", error);
