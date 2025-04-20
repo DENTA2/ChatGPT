@@ -3,83 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мини-приложение (закрывающееся)</title>
+    <title>Telegram Mini App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background: #f0f2f5;
             text-align: center;
         }
-
-        /* Стили мини-приложения */
-        .mini-app {
-            width: 300px;
-            margin: 20px auto;
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #ff4444;
-            color: white;
-            border: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .open-btn {
-            background: #4285f4;
+        button {
+            background: #0088cc;
             color: white;
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
-            cursor: pointer;
             font-size: 16px;
+            cursor: pointer;
             margin-top: 20px;
         }
-
-        .hidden {
-            display: none !important;
+        button:hover {
+            background: #0077b3;
         }
     </style>
 </head>
 <body>
-    <!-- Мини-приложение -->
-    <div class="mini-app" id="miniApp">
-        <button class="close-btn" id="closeBtn">×</button>
-        <h2>Моё мини-приложение</h2>
-        <p>Это контент приложения. Нажмите крестик, чтобы закрыть.</p>
+    <div class="container">
+        <h1>Моё мини-приложение</h1>
+        <p>После нажатия кнопки приложение закроется, и вы вернётесь в чат.</p>
+        
+        <!-- Кнопка для закрытия и отправки данных -->
+        <button id="closeButton">Закрыть и отправить данные</button>
     </div>
 
-    <!-- Кнопка для открытия (изначально скрыта) -->
-    <button class="open-btn hidden" id="openBtn">Открыть приложение</button>
-
+    <!-- Подключаем Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <script>
-        const miniApp = document.getElementById('miniApp');
-        const closeBtn = document.getElementById('closeBtn');
-        const openBtn = document.getElementById('openBtn');
-
-        // Закрытие приложения
-        closeBtn.addEventListener('click', () => {
-            miniApp.classList.add('hidden');
-            openBtn.classList.remove('hidden'); // Показываем кнопку "Открыть"
-        });
-
-        // Открытие приложения
-        openBtn.addEventListener('click', () => {
-            miniApp.classList.remove('hidden');
-            openBtn.classList.add('hidden'); // Скрываем кнопку "Открыть"
+        const tg = window.Telegram.WebApp;
+        
+        // Инициализация WebApp (можно получить данные пользователя)
+        tg.expand(); // Разворачиваем на весь экран
+        
+        // Обработка кнопки
+        document.getElementById('closeButton').addEventListener('click', function() {
+            // Отправляем данные боту (если нужно)
+            tg.sendData(JSON.stringify({ action: "closed", data: "пример данных" }));
+            
+            // Закрываем мини-приложение
+            tg.close();
         });
     </script>
 </body>
