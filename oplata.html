@@ -563,6 +563,12 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // Конфигурация Puzzle Bot API
+        const puzzleBotConfig = {
+            apiToken: 'Xer726MfatevnjQzPJaP4TfPSd7dd1HN',
+            commandName: 'Оплата2990' // Название команды для отправки
+        };
+
         // DOM элементы
         const backButton = document.getElementById('back-button');
         const promoLink = document.getElementById('promo-link');
@@ -627,6 +633,62 @@
             });
         }
 
+        // API-запрос к Puzzle Bot
+        async function puzzleApiRequest(method, params = {}) {
+            const url = new URL('https://api.puzzlebot.top/');
+            url.searchParams.append('token', puzzleBotConfig.apiToken);
+            url.searchParams.append('method', method);
+
+            // Добавляем параметры
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    url.searchParams.append(key, value);
+                }
+            });
+
+            try {
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return await response.json();
+
+            } catch (error) {
+                console.error("Ошибка API запроса:", error);
+                throw error;
+            }
+        }
+
+        // Отправка команды пользователю
+        async function sendPaymentCommand() {
+            try {
+                const userId = getUserIdFromCookie();
+                if (!userId) {
+                    throw new Error("Не удалось получить ID пользователя");
+                }
+
+                const result = await puzzleApiRequest('sendCommand', {
+                    command_name: puzzleBotConfig.commandName,
+                    tg_chat_id: userId
+                });
+
+                showNotification("Запрос на оплату отправлен", "success");
+                return result;
+
+            } catch (error) {
+                console.error("Ошибка при отправке команды:", error);
+                showNotification("Ошибка при отправке запроса", "error");
+                throw error;
+            }
+        }
+
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
             userId = getUserIdFromCookie();
@@ -669,19 +731,12 @@
         });
 
         // Обработка нажатия кнопки оплаты
-        function handlePayment() {
-            const botLink = "tg://resolve?domain=ai_eggo_2_bot&start=cmd_run_3728621638";
-            const newWindow = window.open(botLink, '_blank');
-            
-            setTimeout(() => {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    Telegram.WebApp.close();
-                }
-                
-                if (!newWindow || newWindow.closed) {
-                    window.location.href = botLink;
-                }
-            }, 300);
+        async function handlePayment() {
+            try {
+                await sendPaymentCommand();
+            } catch (error) {
+                console.error("Ошибка при обработке платежа:", error);
+            }
         }
 
         // Переключение состояния кнопки "Применить"
