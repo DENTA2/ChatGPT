@@ -93,7 +93,7 @@
         .benefit-icon {
             position: absolute;
             left: 0;
-            color: var(--primary;
+            color: var(--primary);
         }
         
         .receipt-card {
@@ -323,7 +323,7 @@
         
         .pay-button {
             flex: 1;
-            padding: 12px;
+            padding: 18px;
             background: linear-gradient(to right, #FFD700, var(--primary));
             color: var(--dark);
             border: none;
@@ -333,11 +333,8 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 4px 12px rgba(255, 166, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 60px;
+            position: relative;
+            overflow: hidden;
         }
         
         .pay-button:hover:not(:disabled) {
@@ -350,16 +347,20 @@
             cursor: not-allowed;
         }
         
-        .pay-button-title {
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 1.2;
+        .pay-button.loading::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: loading 1.5s infinite;
         }
         
-        .pay-button-amount {
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 1.2;
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .payment-success {
@@ -560,10 +561,7 @@
                     <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
-            <button class="pay-button" id="pay-button">
-                <div class="pay-button-title">Создать счёт</div>
-                <div class="pay-button-amount" id="pay-button-amount">На сумму 2 990 ₽</div>
-            </button>
+            <button class="pay-button" id="pay-button">Оплатить</button>
         </div>
     </div>
     
@@ -599,7 +597,6 @@
         // Основные DOM элементы
         const payButton = document.getElementById('pay-button');
         const backButton = document.getElementById('back-button');
-        const payButtonAmount = document.getElementById('pay-button-amount');
         const promoLink = document.getElementById('promo-link');
         const promoSection = document.getElementById('promo-section');
         const promoCodeInput = document.getElementById('promo-code');
@@ -640,17 +637,6 @@
             const now = new Date();
             const options = { day: 'numeric', month: 'long', year: 'numeric' };
             receiptDate.textContent = now.toLocaleDateString('ru-RU', options);
-        }
-
-        // Обновляем текст кнопки оплаты
-        function updatePayButtonText() {
-            payButtonAmount.textContent = `На сумму ${currentPrice.toLocaleString('ru-RU')} ₽`;
-        }
-
-        // Блокировка/разблокировка кнопок
-        function setButtonsState(disabled) {
-            payButton.disabled = disabled;
-            backButton.disabled = disabled;
         }
 
         // Проверяем статус оплаты в Firebase
@@ -695,12 +681,23 @@
                     Telegram.WebApp.close();
                     return;
                 } catch (e) {
-                    console.log("Ошибка закрытия через Telegram API:", e);
+                    console.error("Ошибка при закрытии через Telegram API:", e);
                 }
             }
 
             // 2. Резервный способ через редирект
-            window.location.href = "https://t.me";
+            try {
+                window.location.href = "https://t.me";
+                setTimeout(() => {
+                    try {
+                        window.close();
+                    } catch (e) {
+                        console.error("Ошибка при window.close():", e);
+                    }
+                }, 100);
+            } catch (e) {
+                console.error("Ошибка при редиректе:", e);
+            }
         }
 
         // Отправка команды без ожидания ответа
@@ -718,35 +715,95 @@
             fetch(url.toString(), {
                 method: 'GET',
                 headers: {'Accept': 'application/json'},
-                keepalive: true
-            }).catch(() => {});
+                keepalive: true // Гарантирует отправку даже при закрытии страницы
+            }).catch(() => {}); // Игнорируем ошибки
         }
 
         // Обработчик кнопки оплаты
         function handlePayment() {
-            if (isProcessingPayment || payButton.disabled) return;
+            if (isProcessingPayment) return;
             
             isProcessingPayment = true;
-            setButtonsState(true);
             
-            // 1. Отправляем команду
+            // Блокируем кнопки
+            payButton.disabled = true;
+            payButton.classList.add('loading');
+            payButton.textContent = 'Создаем счет...';
+            backButton.disabled = true;
+            
+            // 1. Отправляем команду (без ожидания ответа)
             sendPaymentCommand();
             
-            // 2. Закрываем мини-приложение
+            // 2. Немедленно закрываем мини-приложение
             closeMiniApp();
+            
+            // 3. Дополнительная попытка закрытия через 500мс
+            setTimeout(closeMiniApp, 500);
         }
 
-        // Применить промокод
-        function applyPromoCode() {
-            const promoCode = promoCodeInput.value.trim().toUpperCase();
+        // Показать уведомление
+        function showNotification(text, type) {
+            notification.textContent = text;
+            notification.className = `notification ${type}`;
+            notification.style.opacity = 1;
             
-            if (promoCode === '') {
-                showNotification("Введите промокод", "error");
-                return;
-            }
-            
-            checkPromoCode(promoCode);
+            setTimeout(() => {
+                notification.style.opacity = 0;
+            }, 2000);
         }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            checkInitialPaymentStatus();
+            setCurrentDate();
+            
+            // Начинаем проверку статуса оплаты
+            paymentCheckInterval = setInterval(checkPaymentStatus, 1000);
+            
+            // Обработчики кнопок
+            payButton.addEventListener('click', handlePayment);
+            backButton.addEventListener('click', () => {
+                if (!isProcessingPayment) {
+                    window.location.href = 'index.html';
+                }
+            });
+            successButton.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            // Обработчики промокодов
+            promoCodeInput.addEventListener('input', () => {
+                applyButton.disabled = promoCodeInput.value.trim().length === 0;
+            });
+            
+            applyButton.addEventListener('click', () => {
+                const promoCode = promoCodeInput.value.trim().toUpperCase();
+                if (promoCode === '') {
+                    showNotification("Введите промокод", "error");
+                    return;
+                }
+                checkPromoCode(promoCode);
+            });
+            
+            promoCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && promoCodeInput.value.trim().length > 0) {
+                    checkPromoCode(promoCodeInput.value.trim().toUpperCase());
+                }
+            });
+            
+            promoLink.addEventListener('click', () => {
+                promoSection.classList.toggle('active');
+            });
+            
+            changePromoBtn.addEventListener('click', () => {
+                currentDiscount = 0;
+                currentPrice = originalPrice;
+                appliedPromoCode = '';
+                promoApplied.style.display = 'none';
+                promoLinkContainer.style.display = 'block';
+                updateTotalPrice();
+            });
+        });
 
         // Проверка промокода
         function checkPromoCode(promoCode) {
@@ -777,7 +834,6 @@
                 promoLinkContainer.style.display = 'none';
                 promoCodeInput.value = '';
                 updateTotalPrice();
-                updatePayButtonText();
                 showNotification("Промокод успешно применен", "success");
                 
             }).catch((error) => {
@@ -791,81 +847,6 @@
         function updateTotalPrice() {
             totalAmountElement.textContent = `${currentPrice.toLocaleString('ru-RU')} ₽`;
         }
-
-        // Показать уведомление
-        function showNotification(text, type) {
-            notification.textContent = text;
-            notification.className = `notification ${type}`;
-            notification.style.opacity = 1;
-            
-            setTimeout(() => {
-                notification.style.opacity = 0;
-            }, 2000);
-        }
-
-        // Сбросить промокод
-        function resetPromoCode() {
-            currentDiscount = 0;
-            currentPrice = originalPrice;
-            appliedPromoCode = '';
-            promoApplied.style.display = 'none';
-            promoLinkContainer.style.display = 'block';
-            updateTotalPrice();
-            updatePayButtonText();
-        }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            // Блокируем кнопки на 1 секунду
-            setButtonsState(true);
-            
-            // Устанавливаем текущую дату
-            setCurrentDate();
-            
-            // Обновляем текст кнопки
-            updatePayButtonText();
-            
-            // Проверяем статус оплаты
-            checkInitialPaymentStatus();
-            
-            // Разблокируем кнопки через 1 секунду
-            setTimeout(() => {
-                setButtonsState(false);
-            }, 1000);
-            
-            // Начинаем проверку статуса оплаты
-            paymentCheckInterval = setInterval(checkPaymentStatus, 1000);
-            
-            // Назначаем обработчики
-            payButton.addEventListener('click', handlePayment);
-            backButton.addEventListener('click', () => {
-                if (!isProcessingPayment) {
-                    window.location.href = 'index.html';
-                }
-            });
-            successButton.addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-            
-            // Обработчики промокодов
-            promoCodeInput.addEventListener('input', () => {
-                applyButton.disabled = promoCodeInput.value.trim().length === 0;
-            });
-            
-            applyButton.addEventListener('click', applyPromoCode);
-            
-            promoCodeInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && promoCodeInput.value.trim().length > 0) {
-                    applyPromoCode();
-                }
-            });
-            
-            promoLink.addEventListener('click', () => {
-                promoSection.classList.toggle('active');
-            });
-            
-            changePromoBtn.addEventListener('click', resetPromoCode);
-        });
     </script>
 </body>
 </html>
