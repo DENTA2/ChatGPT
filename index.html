@@ -34,6 +34,32 @@
             color: var(--dark);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+        }
+
+        /* Кнопка поддержки */
+        .support-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .support-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary-light);
         }
 
         /* Экран загрузки */
@@ -383,6 +409,9 @@
 
         <!-- Заключительная разделительная линия -->
         <hr class="divider">
+
+        <!-- Кнопка поддержки -->
+        <div class="support-btn" onclick="window.location.href='help.html'">🛟</div>
 
         <!-- Модальное окно блокировки -->
         <div class="modal-overlay" id="lock-modal">
