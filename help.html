@@ -7,32 +7,36 @@
     <style>
         :root {
             --primary: #2A9D8F;
+            --primary-light: #4CC9B8;
             --secondary: #264653;
             --accent: #E9C46A;
-            --background: #F8F9FA;
+            --background: linear-gradient(135deg, #F8F9FA 0%, #E9F5F4 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
             --text: #2B2D42;
-            --white: #FFFFFF;
+            --text-light: #6C757D;
             --error: #E76F51;
+            --success: #4CAF50;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
             background: var(--background);
             color: var(--text);
             min-height: 100vh;
+            line-height: 1.6;
         }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            position: relative;
         }
 
         .header {
@@ -41,38 +45,55 @@
             justify-content: center;
             margin-bottom: 30px;
             position: relative;
+            padding-top: 10px;
         }
 
         .back-btn {
             position: absolute;
             left: 0;
             background: none;
-            border: 1px solid var(--primary);
+            border: 2px solid var(--primary);
             color: var(--primary);
             padding: 8px 16px;
             border-radius: 20px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .back-btn:hover {
             background: var(--primary);
-            color: var(--white);
+            color: white;
+            transform: translateX(-3px);
+        }
+
+        .back-btn::before {
+            content: "←";
         }
 
         h1 {
             color: var(--secondary);
             font-size: 24px;
-            font-weight: 600;
+            font-weight: 700;
+            text-align: center;
         }
 
-        .form-container {
-            background: var(--white);
-            border-radius: 16px;
+        .support-card {
+            background: var(--card-bg);
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            position: relative;
-            overflow: hidden;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+
+        .support-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
         .topic-selector {
@@ -83,41 +104,67 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px;
-            background: var(--background);
-            border-radius: 12px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .topic-header:hover {
-            background: #e9ecef;
+            border-color: var(--primary-light);
+            box-shadow: 0 6px 16px rgba(42, 157, 143, 0.1);
+        }
+
+        .topic-header.active {
+            border-color: var(--primary);
         }
 
         .topic-options {
             max-height: 0;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
             margin-top: 10px;
+            background: white;
+            border-radius: 0 0 14px 14px;
+            transform-origin: top;
+            transform: scaleY(0);
+            opacity: 0;
+            border: 2px solid #e9ecef;
+            border-top: none;
         }
 
         .topic-options.active {
-            max-height: 300px;
+            max-height: 400px;
+            transform: scaleY(1);
+            opacity: 1;
         }
 
         .topic-option {
-            padding: 12px;
-            margin: 6px 0;
-            border-radius: 8px;
-            background: var(--white);
-            border: 1px solid #dee2e6;
+            padding: 16px 20px;
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .topic-option:last-child {
+            border-bottom: none;
         }
 
         .topic-option:hover {
+            background: rgba(42, 157, 143, 0.05);
             transform: translateX(5px);
-            border-color: var(--primary);
+        }
+
+        .topic-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
         }
 
         .form-section {
@@ -125,47 +172,64 @@
             max-height: 0;
             overflow: hidden;
             transition: all 0.4s ease;
+            transform: translateY(10px);
         }
 
         .form-section.active {
             opacity: 1;
             max-height: 1000px;
+            transform: translateY(0);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
+            margin-bottom: 10px;
+            font-weight: 600;
             color: var(--secondary);
+            font-size: 15px;
         }
 
         textarea {
             width: 100%;
-            padding: 14px;
+            padding: 16px 20px;
             border: 2px solid #e9ecef;
-            border-radius: 12px;
+            border-radius: 14px;
             min-height: 150px;
             resize: vertical;
-            margin-bottom: 15px;
-            transition: border-color 0.3s ease;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
         }
 
         textarea:focus {
             border-color: var(--primary);
             outline: none;
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.2);
         }
 
-        .file-upload {
+        .file-upload-area {
             border: 2px dashed #e9ecef;
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 30px;
             text-align: center;
-            margin: 20px 0;
             cursor: pointer;
             transition: all 0.3s ease;
+            background: white;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .file-upload:hover {
+        .file-upload-area:hover {
+            border-color: var(--primary-light);
+            background: rgba(42, 157, 143, 0.03);
+        }
+
+        .file-upload-area.active {
             border-color: var(--primary);
             background: rgba(42, 157, 143, 0.05);
         }
@@ -174,47 +238,104 @@
             display: none;
         }
 
+        .file-upload-icon {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-text {
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .file-upload-hint {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .file-preview {
+            margin-top: 15px;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .file-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .remove-file {
+            color: var(--error);
+            cursor: pointer;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
         .char-counter {
-            text-align: right;
+            display: flex;
+            justify-content: space-between;
             font-size: 14px;
-            color: #6c757d;
+            color: var(--text-light);
+            margin-top: -10px;
             margin-bottom: 20px;
+        }
+
+        .char-counter.error {
+            color: var(--error);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             background: var(--primary);
-            color: var(--white);
+            color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(42, 157, 143, 0.3);
         }
 
         .submit-btn:disabled {
             background: #ced4da;
             cursor: not-allowed;
+            box-shadow: none;
+            transform: none !important;
         }
 
-        .submit-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255,255,255,0.1);
-            transform: rotate(45deg) translate(-20px, 100%);
-            transition: all 0.5s ease;
+        .submit-btn:hover:not(:disabled) {
+            background: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(42, 157, 143, 0.4);
         }
 
-        .submit-btn:hover:not(:disabled)::after {
-            transform: rotate(45deg) translate(100%, 100%);
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         .success-screen {
@@ -223,15 +344,18 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: var(--white);
+            background: var(--card-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 30px;
+            padding: 40px;
             opacity: 0;
             pointer-events: none;
             transition: all 0.5s ease;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 10;
         }
 
         .success-screen.active {
@@ -240,29 +364,44 @@
         }
 
         .success-icon {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             background: var(--primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 25px;
-            animation: checkmark 0.6s ease;
+            margin-bottom: 30px;
+            animation: checkmark 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            color: white;
+            font-size: 50px;
+            box-shadow: 0 10px 30px rgba(42, 157, 143, 0.3);
         }
 
         @keyframes checkmark {
-            0% { transform: scale(0); }
+            0% { transform: scale(0); opacity: 0; }
             80% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            max-width: 300px;
         }
 
         .progress-bar {
-            height: 4px;
+            height: 6px;
             background: #e9ecef;
-            border-radius: 2px;
+            border-radius: 3px;
             overflow: hidden;
-            margin: 20px 0;
             width: 100%;
             max-width: 200px;
         }
@@ -272,6 +411,7 @@
             background: var(--primary);
             width: 0;
             transition: width 0.3s ease;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -282,44 +422,70 @@
             <h1>Помощь</h1>
         </div>
 
-        <div class="form-container">
+        <div class="support-card">
             <!-- Шаг 1: Выбор темы -->
             <div class="topic-selector">
-                <div class="topic-header" onclick="toggleTopics()">
+                <div class="topic-header" id="topic-header" onclick="toggleTopics()">
                     <span id="selected-topic-text">Выберите тему обращения</span>
-                    <span>▼</span>
+                    <span class="arrow">▼</span>
                 </div>
                 <div class="topic-options" id="topic-options">
-                    <div class="topic-option" onclick="selectTopic('Сообщить о проблеме')">🛠️ Сообщить о проблеме</div>
-                    <div class="topic-option" onclick="selectTopic('Предложить идею')">💡 Предложить идею</div>
-                    <div class="topic-option" onclick="selectTopic('Поделиться впечатлением')">😊 Поделиться впечатлением</div>
-                    <div class="topic-option" onclick="selectTopic('Другое')">✉️ Другое</div>
+                    <div class="topic-option" onclick="selectTopic('Сообщить о проблеме')">
+                        <span class="topic-icon">🛠️</span>
+                        <span>Сообщить о проблеме</span>
+                    </div>
+                    <div class="topic-option" onclick="selectTopic('Предложить идею')">
+                        <span class="topic-icon">💡</span>
+                        <span>Предложить идею</span>
+                    </div>
+                    <div class="topic-option" onclick="selectTopic('Поделиться впечатлением')">
+                        <span class="topic-icon">😊</span>
+                        <span>Поделиться впечатлением</span>
+                    </div>
+                    <div class="topic-option" onclick="selectTopic('Другое')">
+                        <span class="topic-icon">✉️</span>
+                        <span>Другое</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Шаг 2: Форма обращения -->
             <div class="form-section" id="main-form">
-                <label>Подробное описание</label>
-                <textarea id="message" placeholder="Опишите вашу проблему максимально подробно..." 
-                          maxlength="600" oninput="updateCounter()"></textarea>
-                <div class="char-counter">
-                    <span id="char-count">0</span>/600 символов
+                <div class="form-group">
+                    <label for="message">Подробное описание</label>
+                    <textarea id="message" placeholder="Опишите вашу проблему максимально подробно..." 
+                              maxlength="600" oninput="updateCounter()"></textarea>
+                    <div class="char-counter" id="char-counter">
+                        <span>Минимум 10 символов</span>
+                        <span><span id="char-count">0</span>/600</span>
+                    </div>
                 </div>
 
-                <div class="file-upload" onclick="document.getElementById('file-input').click()">
-                    📎 Перетащите или нажмите для загрузки файла
-                    <input type="file" class="file-input" id="file-input" onchange="showFileName()">
+                <div class="form-group">
+                    <label>Прикрепить файл (необязательно)</label>
+                    <div class="file-upload-area" id="file-upload-area" 
+                         onclick="document.getElementById('file-input').click()"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event)">
+                        <div class="file-upload-icon">📎</div>
+                        <div class="file-upload-text">Перетащите файл сюда или нажмите для выбора</div>
+                        <div class="file-upload-hint">Максимальный размер: 5MB</div>
+                        <input type="file" class="file-input" id="file-input" onchange="handleFileSelect()">
+                    </div>
+                    <div id="file-preview-container"></div>
                 </div>
-                <div id="file-name" class="file-name"></div>
 
-                <button class="submit-btn" id="submit-btn" onclick="submitForm()" disabled>Отправить обращение</button>
+                <button class="submit-btn" id="submit-btn" onclick="submitForm()" disabled>
+                    Отправить обращение
+                </button>
             </div>
 
             <!-- Шаг 3: Успешная отправка -->
             <div class="success-screen" id="success-screen">
                 <div class="success-icon">✓</div>
-                <h2>Ваше обращение успешно отправлено!</h2>
-                <p>Мы ответим вам в течение 24 часов</p>
+                <h2 class="success-title">Ваше обращение успешно отправлено!</h2>
+                <p class="success-message">Мы ответим вам в течение 24 часов</p>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
@@ -333,25 +499,32 @@
         const CHAT_ID = "-1002493916319";
 
         // Элементы DOM
+        const topicHeader = document.getElementById('topic-header');
         const topicOptions = document.getElementById('topic-options');
         const mainForm = document.getElementById('main-form');
         const submitBtn = document.getElementById('submit-btn');
         const messageField = document.getElementById('message');
+        const charCounter = document.getElementById('char-counter');
         const charCount = document.getElementById('char-count');
+        const fileUploadArea = document.getElementById('file-upload-area');
+        const fileInput = document.getElementById('file-input');
+        const filePreviewContainer = document.getElementById('file-preview-container');
         const successScreen = document.getElementById('success-screen');
 
         // Состояние
         let selectedTopic = null;
         let selectedFile = null;
 
+        // Функции
         function toggleTopics() {
             topicOptions.classList.toggle('active');
+            topicHeader.classList.toggle('active');
         }
 
         function selectTopic(topic) {
             selectedTopic = topic;
             document.getElementById('selected-topic-text').textContent = topic;
-            topicOptions.classList.remove('active');
+            toggleTopics();
             mainForm.classList.add('active');
             validateForm();
         }
@@ -359,17 +532,66 @@
         function updateCounter() {
             const length = messageField.value.length;
             charCount.textContent = length;
+            
+            if (length < 10) {
+                charCounter.classList.add('error');
+            } else {
+                charCounter.classList.remove('error');
+            }
+            
             validateForm();
         }
 
-        function showFileName() {
-            const file = document.getElementById('file-input').files[0];
-            const fileName = document.getElementById('file-name');
-            if (file) {
-                fileName.textContent = `Выбран файл: ${file.name}`;
-            } else {
-                fileName.textContent = '';
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileUploadArea.classList.add('active');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileUploadArea.classList.remove('active');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileUploadArea.classList.remove('active');
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
             }
+        }
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            selectedFile = file;
+            
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Файл слишком большой. Максимальный размер: 5MB');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                filePreviewContainer.innerHTML = `
+                    <div class="file-preview">
+                        <div class="file-info">
+                            <span class="file-icon">📄</span>
+                            <span class="file-name">${file.name}</span>
+                        </div>
+                        <span class="remove-file" onclick="removeFile()">×</span>
+                    </div>
+                `;
+            }
+        }
+
+        function removeFile() {
+            fileInput.value = '';
+            filePreviewContainer.innerHTML = '';
+            selectedFile = null;
         }
 
         function validateForm() {
@@ -379,65 +601,66 @@
 
         async function submitForm() {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = 'Отправка... <div class="loader"></div>';
-
-            const formData = new FormData();
-            formData.append('chat_id', CHAT_ID);
-            formData.append('text', `Тема: ${selectedTopic}\n\nСообщение: ${messageField.value}`);
-
-            if (document.getElementById('file-input').files[0]) {
-                formData.append('document', document.getElementById('file-input').files[0]);
-            }
+            submitBtn.innerHTML = 'Отправка...';
+            
+            const message = `📢 Новое обращение в поддержку\n\n` +
+                           `Тема: ${selectedTopic}\n\n` +
+                           `Сообщение:\n${messageField.value}`;
 
             try {
-                const endpoint = document.getElementById('file-input').files[0] ? 
-                    `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument` : 
-                    `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                let response;
+                
+                if (selectedFile) {
+                    const formData = new FormData();
+                    formData.append('chat_id', CHAT_ID);
+                    formData.append('caption', message);
+                    formData.append('document', selectedFile);
+                    
+                    response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: CHAT_ID,
+                            text: message
+                        })
+                    });
+                }
+                
                 const result = await response.json();
-                if (!result.ok) throw new Error(result.description);
-
-                showSuccessScreen();
+                if (!result.ok) throw new Error(result.description || 'Неизвестная ошибка');
+                
+                showSuccess();
             } catch (error) {
-                alert(`Ошибка отправки: ${error.message}`);
+                alert(`Ошибка при отправке: ${error.message}`);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Отправить обращение';
             }
         }
 
-        function showSuccessScreen() {
-            document.querySelector('.header').style.display = 'none';
+        function showSuccess() {
             successScreen.classList.add('active');
-            document.getElementById('progress-fill').style.width = '100%';
             
+            // Анимация прогресс бара
+            setTimeout(() => {
+                document.getElementById('progress-fill').style.width = '100%';
+            }, 100);
+            
+            // Редирект через 3 секунды
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 3000);
         }
 
-        // Drag and Drop
-        const dropArea = document.querySelector('.file-upload');
-
-        dropArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropArea.style.borderColor = var(--primary);
-        });
-
-        dropArea.addEventListener('dragleave', () => {
-            dropArea.style.borderColor = '#e9ecef';
-        });
-
-        dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                document.getElementById('file-input').files = files;
-                showFileName();
+        // Закрытие выпадающего списка при клике вне его
+        document.addEventListener('click', (e) => {
+            if (!topicHeader.contains(e.target) && !topicOptions.contains(e.target)) {
+                topicOptions.classList.remove('active');
+                topicHeader.classList.remove('active');
             }
         });
     </script>
