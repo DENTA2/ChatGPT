@@ -21,6 +21,7 @@
             --locked-bg: #F0F0F0;
             --module-label: #666666;
             --disabled: #CCCCCC;
+            --support-bg: #FFF5E6;
         }
 
         * {
@@ -28,6 +29,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Montserrat', sans-serif;
+            outline: none !important;
         }
 
         body {
@@ -68,20 +70,22 @@
         }
 
         .support-btn {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: var(--primary);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 24px;
             box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             z-index: 2;
+            border: none;
+            user-select: none;
         }
 
         .support-btn:hover {
@@ -113,7 +117,7 @@
         .support-option {
             padding: 12px 20px;
             border-radius: 30px;
-            background: var(--white);
+            background: var(--support-bg);
             color: var(--dark);
             font-weight: 500;
             display: flex;
@@ -124,6 +128,8 @@
             transition: all 0.2s;
             transform: translateX(20px);
             opacity: 0;
+            border: none;
+            text-decoration: none;
         }
 
         .support-options.active .support-option {
@@ -142,6 +148,7 @@
         .support-option:hover {
             transform: translateX(0) scale(1.05);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            background: #FFEDCC;
         }
 
         .support-option.disabled {
@@ -153,30 +160,11 @@
         .support-option.disabled:hover {
             transform: translateX(0) !important;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: var(--disabled);
         }
 
         .support-icon {
             font-size: 20px;
-        }
-
-        /* Уведомление */
-        .notification {
-            position: fixed;
-            padding: 12px 20px;
-            background: var(--white);
-            color: var(--dark);
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            animation: fadeInOut 2s forwards;
-            pointer-events: none;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(20px); }
-            20% { opacity: 1; transform: translateY(0); }
-            80% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
         }
 
         /* Остальные стили остаются без изменений */
@@ -314,6 +302,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
+            border: none;
         }
 
         .access-help:hover {
@@ -434,6 +423,8 @@
             cursor: pointer;
             color: #999;
             transition: color 0.2s;
+            border: none;
+            background: none;
         }
 
         .close-modal:hover {
@@ -525,22 +516,22 @@
         <!-- Контейнер поддержки -->
         <div class="support-container">
             <div class="support-options" id="supportOptions">
-                <div class="support-option" onclick="window.location.href='help.html'">
+                <a href="help.html" class="support-option">
                     <span class="support-icon">📩</span>
                     Создать обращение
-                </div>
-                <div class="support-option disabled" id="contactSupportBtn">
+                </a>
+                <button class="support-option disabled" id="contactSupportBtn">
                     <span class="support-icon">💬</span>
                     Написать поддержке
-                </div>
+                </button>
             </div>
-            <div class="support-btn" id="supportBtn">🛟</div>
+            <button class="support-btn" id="supportBtn">🛟</button>
         </div>
 
         <!-- Модальное окно блокировки -->
         <div class="modal-overlay" id="lock-modal">
             <div class="modal-content">
-                <div class="close-modal" id="close-lock-modal">×</div>
+                <button class="close-modal" id="close-lock-modal">×</button>
                 <div class="modal-text">
                     Этот модуль недоступен в демо-версии. Для полного доступа к материалам курса необходимо оформить подписку.
                 </div>
@@ -551,7 +542,7 @@
         <!-- Модальное окно справки -->
         <div class="modal-overlay" id="help-modal">
             <div class="modal-content">
-                <div class="close-modal" id="close-help-modal">×</div>
+                <button class="close-modal" id="close-help-modal">×</button>
                 <div class="modal-title" id="help-modal-title"></div>
                 <div class="modal-text" id="help-modal-text"></div>
                 <button class="modal-btn" id="help-payment-btn" style="display: none;">Получить полный доступ</button>
@@ -588,7 +579,6 @@
         function initSupportButton() {
             const supportBtn = document.getElementById('supportBtn');
             const supportOptions = document.getElementById('supportOptions');
-            const contactSupportBtn = document.getElementById('contactSupportBtn');
 
             supportBtn.addEventListener('click', () => {
                 supportBtn.classList.toggle('active');
@@ -600,28 +590,6 @@
                     supportBtn.innerHTML = '🛟';
                 }
             });
-
-            contactSupportBtn.addEventListener('click', (e) => {
-                if (contactSupportBtn.classList.contains('disabled')) {
-                    e.stopPropagation();
-                    showNotification(e.clientX, e.clientY, 'Функция в разработке');
-                }
-            });
-        }
-
-        // Показать уведомление
-        function showNotification(x, y, text) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = text;
-            notification.style.left = `${x - 50}px`;
-            notification.style.top = `${y - 50}px`;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 2000);
         }
 
         // Функция для сохранения ID в cookie
