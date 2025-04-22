@@ -39,12 +39,45 @@
             padding: 20px;
         }
 
-        h1 {
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 0;
+            background: none;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(-3px);
+        }
+
+        .back-btn::before {
+            content: "←";
+        }
+
+        .header-title {
             color: var(--secondary);
             font-size: 24px;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 30px;
         }
 
         .support-card {
@@ -116,13 +149,17 @@
         }
 
         .topic-option {
-            padding: 16px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 12px;
             border-bottom: 1px solid #FFF0E0;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .topic-option:last-child {
@@ -135,9 +172,10 @@
         }
 
         .topic-icon {
-            font-size: 20px;
+            font-size: 18px;
             width: 24px;
             text-align: center;
+            flex-shrink: 0;
         }
 
         .form-section {
@@ -254,8 +292,13 @@
             color: var(--text-light);
         }
 
+        .file-preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .file-preview {
-            margin-top: 15px;
             padding: 12px 15px;
             background: #FFF8F0;
             border-radius: 10px;
@@ -263,6 +306,7 @@
             align-items: center;
             justify-content: space-between;
             animation: fadeIn 0.3s ease;
+            position: relative;
         }
 
         @keyframes fadeIn {
@@ -270,25 +314,53 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .file-status {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .file-status.loading {
+            color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        .file-status.success {
+            color: var(--success);
+        }
+
+        .file-status.error {
+            color: var(--error);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .file-info {
             display: flex;
             align-items: center;
             gap: 10px;
             overflow: hidden;
+            flex-grow: 1;
         }
 
         .file-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px;
         }
 
         .remove-file {
-            color: var(--error);
+            color: #999;
             cursor: pointer;
             font-size: 18px;
-            flex-shrink: 0;
+            margin-left: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .remove-file:hover {
+            color: var(--error);
         }
 
         .char-counter {
@@ -327,6 +399,10 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .submit-btn:disabled {
@@ -344,6 +420,11 @@
 
         .submit-btn:active:not(:disabled) {
             transform: translateY(0);
+        }
+
+        .submit-icon {
+            font-size: 18px;
+            transition: all 0.3s ease;
         }
 
         .loading-screen, .success-screen {
@@ -379,11 +460,6 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 30px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .loading-title {
@@ -426,10 +502,34 @@
             margin-bottom: 30px;
             max-width: 300px;
         }
+
+        .return-btn {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
+        }
+
+        .return-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 149, 0, 0.4);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="header">
+            <button class="back-btn" id="back-btn">Назад</button>
+            <h1 class="header-title">Помощь</h1>
+        </div>
+
         <div class="support-card">
             <!-- Шаг 1: Выбор темы -->
             <div class="topic-selector">
@@ -438,17 +538,17 @@
                     <span class="arrow">▼</span>
                 </div>
                 <div class="topic-options" id="topic-options">
-                    <div class="topic-option" onclick="selectTopic('Сообщить о проблеме')">
+                    <div class="topic-option" onclick="selectTopic('Проблема')">
                         <span class="topic-icon">🛠️</span>
-                        <span>Сообщить о проблеме</span>
+                        <span>Проблема</span>
                     </div>
-                    <div class="topic-option" onclick="selectTopic('Предложить идею')">
+                    <div class="topic-option" onclick="selectTopic('Идея')">
                         <span class="topic-icon">💡</span>
-                        <span>Предложить идею</span>
+                        <span>Идея</span>
                     </div>
-                    <div class="topic-option" onclick="selectTopic('Поделиться впечатлением')">
+                    <div class="topic-option" onclick="selectTopic('Отзыв')">
                         <span class="topic-icon">😊</span>
-                        <span>Поделиться впечатлением</span>
+                        <span>Отзыв</span>
                     </div>
                     <div class="topic-option" onclick="selectTopic('Другое')">
                         <span class="topic-icon">✉️</span>
@@ -481,10 +581,11 @@
                     <div class="file-upload-hint">Максимальный размер: 5MB</div>
                     <input type="file" class="file-input" id="file-input" onchange="handleFileSelect()">
                 </div>
-                <div id="file-preview-container"></div>
+                <div class="file-preview-container" id="file-preview-container"></div>
 
                 <button class="submit-btn" id="submit-btn" onclick="submitForm()" disabled>
                     Отправить обращение
+                    <span class="submit-icon">✈️</span>
                 </button>
             </div>
 
@@ -499,6 +600,7 @@
                 <div class="success-icon">✓</div>
                 <h2 class="success-title">Ваше обращение успешно отправлено!</h2>
                 <p class="success-message">Мы ответим вам в ближайшее время</p>
+                <button class="return-btn" onclick="window.location.href='index.html'">Вернуться в меню</button>
             </div>
         </div>
     </div>
@@ -509,6 +611,7 @@
         const CHAT_ID = "-1002493916319";
 
         // Элементы DOM
+        const backBtn = document.getElementById('back-btn');
         const topicHeader = document.getElementById('topic-header');
         const topicOptions = document.getElementById('topic-options');
         const mainForm = document.getElementById('main-form');
@@ -527,6 +630,7 @@
         let selectedTopic = null;
         let selectedFile = null;
         let filesVisible = false;
+        let filesUploading = [];
 
         // Функции
         function toggleTopics() {
@@ -557,7 +661,6 @@
                 charCounter.classList.add('visible');
             } else {
                 charCounter.classList.remove('error');
-                // Показываем счетчик только если введено больше 0 символов
                 charCounter.classList.toggle('visible', length > 0);
             }
             
@@ -588,32 +691,72 @@
         }
 
         function handleFileSelect() {
-            const file = fileInput.files[0];
-            selectedFile = file;
+            const files = Array.from(fileInput.files);
+            if (files.length === 0) return;
             
-            if (file) {
+            files.forEach(file => {
                 if (file.size > 5 * 1024 * 1024) {
-                    alert('Файл слишком большой. Максимальный размер: 5MB');
-                    fileInput.value = '';
+                    alert(`Файл "${file.name}" слишком большой. Максимальный размер: 5MB`);
                     return;
                 }
                 
-                filePreviewContainer.innerHTML = `
-                    <div class="file-preview">
-                        <div class="file-info">
-                            <span class="file-icon">📄</span>
-                            <span class="file-name">${file.name}</span>
-                        </div>
-                        <span class="remove-file" onclick="removeFile()">×</span>
+                const fileId = Date.now() + Math.random().toString(36).substr(2, 5);
+                filesUploading.push({ id: fileId, file, status: 'loading' });
+                
+                const filePreview = document.createElement('div');
+                filePreview.className = 'file-preview';
+                filePreview.id = `file-${fileId}`;
+                filePreview.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-status loading">↻</span>
+                        <span class="file-name">${file.name}</span>
                     </div>
+                    <span class="remove-file" onclick="removeFile('${fileId}')">🗑️</span>
                 `;
+                
+                filePreviewContainer.appendChild(filePreview);
+                
+                // Имитация загрузки файла
+                setTimeout(() => {
+                    updateFileStatus(fileId, 'success');
+                }, 1500);
+            });
+        }
+
+        function updateFileStatus(fileId, status) {
+            const index = filesUploading.findIndex(f => f.id === fileId);
+            if (index === -1) return;
+            
+            filesUploading[index].status = status;
+            const statusElement = document.querySelector(`#file-${fileId} .file-status`);
+            
+            if (statusElement) {
+                statusElement.classList.remove('loading', 'success', 'error');
+                statusElement.classList.add(status);
+                
+                if (status === 'success') {
+                    statusElement.textContent = '✓';
+                } else if (status === 'error') {
+                    statusElement.textContent = '✕';
+                }
             }
         }
 
-        function removeFile() {
-            fileInput.value = '';
-            filePreviewContainer.innerHTML = '';
-            selectedFile = null;
+        function removeFile(fileId) {
+            const index = filesUploading.findIndex(f => f.id === fileId);
+            if (index !== -1) {
+                filesUploading.splice(index, 1);
+            }
+            
+            const fileElement = document.getElementById(`file-${fileId}`);
+            if (fileElement) {
+                fileElement.remove();
+            }
+            
+            // Если файлов больше нет, очищаем input
+            if (filesUploading.length === 0) {
+                fileInput.value = '';
+            }
         }
 
         function validateForm() {
@@ -622,25 +765,32 @@
         }
 
         async function submitForm() {
-            // Показываем экран загрузки
+            // Блокируем интерфейс
+            backBtn.disabled = true;
+            document.querySelector('.header-title').style.opacity = '0.5';
             loadingScreen.classList.add('active');
             
-            // Получаем user_id из cookie
-            const userId = getCookie('tg_user_id');
-            const username = userId ? `Пользователь ID: ${userId}` : 'Анонимный пользователь';
+            // Получаем данные пользователя (имитация)
+            const userId = getCookie('tg_user_id') || '12345';
+            const username = getCookie('tg_username') || 'unknown_user';
             
             const message = `📢 *${selectedTopic}*\n\n` +
-                           `👤 *Отправитель:* ${username}\n\n` +
+                           `👤 *Отправитель:* @${username} (ID: ${userId})\n\n` +
                            `📝 *Содержимое:*\n${messageField.value}`;
 
             try {
                 let response;
                 
-                if (selectedFile) {
+                if (filesUploading.length > 0) {
                     const formData = new FormData();
                     formData.append('chat_id', CHAT_ID);
                     formData.append('caption', message);
-                    formData.append('document', selectedFile);
+                    
+                    // Добавляем только успешно загруженные файлы
+                    filesUploading.filter(f => f.status === 'success').forEach((fileObj, index) => {
+                        formData.append('document', fileObj.file);
+                    });
+                    
                     formData.append('parse_mode', 'Markdown');
                     
                     response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
@@ -662,12 +812,14 @@
                 const result = await response.json();
                 if (!result.ok) throw new Error(result.description || 'Неизвестная ошибка');
                 
-                // Скрываем экран загрузки и показываем успех
+                // Показываем экран успеха
                 loadingScreen.classList.remove('active');
                 successScreen.classList.add('active');
             } catch (error) {
                 alert(`Ошибка при отправке: ${error.message}`);
                 loadingScreen.classList.remove('active');
+                backBtn.disabled = false;
+                document.querySelector('.header-title').style.opacity = '1';
             }
         }
 
@@ -677,6 +829,13 @@
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
+
+        // Обработчик кнопки "Назад"
+        backBtn.addEventListener('click', () => {
+            if (!loadingScreen.classList.contains('active') {
+                window.history.back();
+            }
+        });
 
         // Закрытие выпадающего списка при клике вне его
         document.addEventListener('click', (e) => {
