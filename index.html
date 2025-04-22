@@ -20,6 +20,7 @@
             --error: #F44336;
             --locked-bg: #F0F0F0;
             --module-label: #666666;
+            --disabled: #CCCCCC;
         }
 
         * {
@@ -30,31 +31,57 @@
         }
 
         body {
-            background: linear-gradient(135deg, var(--white) 0%, #FFF3E0 100%);
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFFFFF 100%);
             color: var(--dark);
             min-height: 100vh;
             padding: 20px;
             position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Фоновые элементы */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 210, 0, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(255, 122, 0, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 40% 80%, rgba(255, 158, 0, 0.1) 0%, transparent 20%);
+            z-index: -1;
+            pointer-events: none;
         }
 
         /* Кнопка поддержки */
-        .support-btn {
+        .support-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .support-btn {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: var(--primary);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
             box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
             cursor: pointer;
-            z-index: 100;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            z-index: 2;
         }
 
         .support-btn:hover {
@@ -62,7 +89,97 @@
             background: var(--primary-light);
         }
 
-        /* Экран загрузки */
+        .support-btn.active {
+            transform: rotate(90deg) scale(0.9);
+            background: var(--error);
+        }
+
+        .support-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .support-options.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .support-option {
+            padding: 12px 20px;
+            border-radius: 30px;
+            background: var(--white);
+            color: var(--dark);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            transform: translateX(20px);
+            opacity: 0;
+        }
+
+        .support-options.active .support-option {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .support-option:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .support-option:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+        .support-option:hover {
+            transform: translateX(0) scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .support-option.disabled {
+            background: var(--disabled);
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .support-option.disabled:hover {
+            transform: translateX(0) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .support-icon {
+            font-size: 20px;
+        }
+
+        /* Уведомление */
+        .notification {
+            position: fixed;
+            padding: 12px 20px;
+            background: var(--white);
+            color: var(--dark);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: fadeInOut 2s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        /* Остальные стили остаются без изменений */
         .loading-screen {
             position: fixed;
             top: 0;
@@ -117,13 +234,11 @@
             50% { transform: translateY(-10px); }
         }
 
-        /* Основной контент (изначально скрыт) */
         #app-content {
             opacity: 0;
             transition: opacity 0.5s ease;
         }
 
-        /* Шапка с профилем */
         .profile-header {
             display: flex;
             align-items: center;
@@ -206,7 +321,6 @@
             background: var(--primary-light);
         }
 
-        /* Разделительная линия */
         .divider {
             height: 2px;
             background: linear-gradient(to right, transparent, var(--primary), var(--secondary), transparent);
@@ -222,7 +336,6 @@
             text-align: center;
         }
 
-        /* Модули */
         .modules-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -289,7 +402,6 @@
             color: var(--primary);
         }
 
-        /* Модальные окна */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -410,8 +522,20 @@
         <!-- Заключительная разделительная линия -->
         <hr class="divider">
 
-        <!-- Кнопка поддержки -->
-        <div class="support-btn" onclick="window.location.href='help.html'">🛟</div>
+        <!-- Контейнер поддержки -->
+        <div class="support-container">
+            <div class="support-options" id="supportOptions">
+                <div class="support-option" onclick="window.location.href='help.html'">
+                    <span class="support-icon">📩</span>
+                    Создать обращение
+                </div>
+                <div class="support-option disabled" id="contactSupportBtn">
+                    <span class="support-icon">💬</span>
+                    Написать поддержке
+                </div>
+            </div>
+            <div class="support-btn" id="supportBtn">🛟</div>
+        </div>
 
         <!-- Модальное окно блокировки -->
         <div class="modal-overlay" id="lock-modal">
@@ -454,10 +578,51 @@
         // Состояние приложения
         const state = {
             userId: null,
+            username: null,
             isPaid: false,
             dbRef: null,
             isLoaded: false
         };
+
+        // Инициализация кнопки поддержки
+        function initSupportButton() {
+            const supportBtn = document.getElementById('supportBtn');
+            const supportOptions = document.getElementById('supportOptions');
+            const contactSupportBtn = document.getElementById('contactSupportBtn');
+
+            supportBtn.addEventListener('click', () => {
+                supportBtn.classList.toggle('active');
+                supportOptions.classList.toggle('active');
+                
+                if (supportBtn.classList.contains('active')) {
+                    supportBtn.innerHTML = '×';
+                } else {
+                    supportBtn.innerHTML = '🛟';
+                }
+            });
+
+            contactSupportBtn.addEventListener('click', (e) => {
+                if (contactSupportBtn.classList.contains('disabled')) {
+                    e.stopPropagation();
+                    showNotification(e.clientX, e.clientY, 'Функция в разработке');
+                }
+            });
+        }
+
+        // Показать уведомление
+        function showNotification(x, y, text) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = text;
+            notification.style.left = `${x - 50}px`;
+            notification.style.top = `${y - 50}px`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
 
         // Функция для сохранения ID в cookie
         function setCookie(name, value, days) {
@@ -533,6 +698,7 @@
             
             // Инициализируем модальные окна
             initModals();
+            initSupportButton();
 
             // Убираем стандартную заставку Telegram
             if (window.Telegram?.WebApp) {
@@ -599,6 +765,7 @@
             const tg = Telegram.WebApp;
             const user = tg.initDataUnsafe.user;
             state.userId = user.id.toString();
+            state.username = user.username || null;
             
             // Сохраняем ID пользователя в cookie
             setCookie('tg_user_id', state.userId, 30);
@@ -645,6 +812,7 @@
             // Для тестирования без Telegram
             document.getElementById('user-name-text').textContent = 'Тестовый пользователь';
             state.userId = getCookie('tg_user_id') || "test-user";
+            state.username = "test_user";
             document.getElementById('user-id').textContent = `(${state.userId})`;
             document.getElementById('avatar-fallback').textContent = 'T';
             
@@ -656,20 +824,28 @@
 
         async function initDatabaseListener() {
             return new Promise((resolve) => {
-                state.dbRef = database.ref('users/' + state.userId + '/oplata');
+                state.dbRef = database.ref('users/' + state.userId);
                 
                 // Обработчик изменений
                 state.dbRef.on('value', (snapshot) => {
-                    const oplata = snapshot.val();
-                    state.isPaid = oplata === 1;
+                    const userData = snapshot.val();
+                    if (userData) {
+                        state.isPaid = userData.oplata === 1;
+                        
+                        // Если username отсутствует в БД, сохраняем его
+                        if (!userData.username && state.username) {
+                            state.dbRef.update({ username: state.username });
+                        }
+                    }
                     updateUI().then(resolve);
                 });
 
                 // Создаем запись пользователя если не существует
-                database.ref('users/' + state.userId).once('value').then((snapshot) => {
+                state.dbRef.once('value').then((snapshot) => {
                     if (!snapshot.exists()) {
-                        database.ref('users/' + state.userId).set({
+                        state.dbRef.set({
                             name: document.getElementById('user-name-text').textContent,
+                            username: state.username,
                             oplata: 0
                         });
                     }
