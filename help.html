@@ -6,16 +6,16 @@
     <title>Техническая поддержка</title>
     <style>
         :root {
-            --primary: #2A9D8F;
-            --primary-light: #4CC9B8;
-            --secondary: #264653;
-            --accent: #E9C46A;
-            --background: linear-gradient(135deg, #F8F9FA 0%, #E9F5F4 100%);
+            --primary: #FF9500;
+            --primary-light: #FFAA33;
+            --secondary: #FF6B00;
+            --accent: #FFD700;
+            --background: linear-gradient(135deg, #FFF8F0 0%, #FFE8D6 100%);
             --card-bg: rgba(255, 255, 255, 0.95);
-            --text: #2B2D42;
-            --text-light: #6C757D;
-            --error: #E76F51;
-            --success: #4CAF50;
+            --text: #333333;
+            --text-light: #666666;
+            --error: #FF3B30;
+            --success: #34C759;
             --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
         }
 
@@ -39,46 +39,12 @@
             padding: 20px;
         }
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-            position: relative;
-            padding-top: 10px;
-        }
-
-        .back-btn {
-            position: absolute;
-            left: 0;
-            background: none;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .back-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateX(-3px);
-        }
-
-        .back-btn::before {
-            content: "←";
-        }
-
         h1 {
             color: var(--secondary);
             font-size: 24px;
             font-weight: 700;
             text-align: center;
+            margin-bottom: 30px;
         }
 
         .support-card {
@@ -111,13 +77,13 @@
             border-radius: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 2px solid #e9ecef;
+            border: 2px solid #FFE0B2;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .topic-header:hover {
             border-color: var(--primary-light);
-            box-shadow: 0 6px 16px rgba(42, 157, 143, 0.1);
+            box-shadow: 0 6px 16px rgba(255, 149, 0, 0.1);
         }
 
         .topic-header.active {
@@ -138,7 +104,7 @@
             transform-origin: top;
             transform: scaleY(0);
             opacity: 0;
-            border: 2px solid #e9ecef;
+            border: 2px solid #FFE0B2;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             z-index: 10;
         }
@@ -156,7 +122,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid #f1f3f5;
+            border-bottom: 1px solid #FFF0E0;
         }
 
         .topic-option:last-child {
@@ -164,7 +130,7 @@
         }
 
         .topic-option:hover {
-            background: rgba(42, 157, 143, 0.05);
+            background: rgba(255, 149, 0, 0.05);
             transform: translateX(5px);
         }
 
@@ -203,7 +169,7 @@
         textarea {
             width: 100%;
             padding: 16px 20px;
-            border: 2px solid #e9ecef;
+            border: 2px solid #FFE0B2;
             border-radius: 14px;
             min-height: 150px;
             resize: vertical;
@@ -215,11 +181,32 @@
         textarea:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.2);
+            box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.2);
+        }
+
+        .add-files-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .add-files-btn:hover {
+            color: var(--secondary);
+            transform: translateX(5px);
+        }
+
+        .add-files-btn::before {
+            content: "+";
+            font-size: 20px;
         }
 
         .file-upload-area {
-            border: 2px dashed #e9ecef;
+            border: 2px dashed #FFE0B2;
             border-radius: 14px;
             padding: 30px;
             text-align: center;
@@ -229,16 +216,21 @@
             margin-bottom: 20px;
             position: relative;
             overflow: hidden;
+            display: none;
+        }
+
+        .file-upload-area.active {
+            display: block;
         }
 
         .file-upload-area:hover {
             border-color: var(--primary-light);
-            background: rgba(42, 157, 143, 0.03);
+            background: rgba(255, 149, 0, 0.03);
         }
 
-        .file-upload-area.active {
+        .file-upload-area.file-drag {
             border-color: var(--primary);
-            background: rgba(42, 157, 143, 0.05);
+            background: rgba(255, 149, 0, 0.05);
         }
 
         .file-input {
@@ -265,7 +257,7 @@
         .file-preview {
             margin-top: 15px;
             padding: 12px 15px;
-            background: #f8f9fa;
+            background: #FFF8F0;
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -306,6 +298,15 @@
             color: var(--text-light);
             margin-top: -10px;
             margin-bottom: 20px;
+            opacity: 0;
+            height: 0;
+            transition: all 0.3s ease;
+        }
+
+        .char-counter.visible {
+            opacity: 1;
+            height: auto;
+            margin-bottom: 20px;
         }
 
         .char-counter.error {
@@ -325,11 +326,11 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(42, 157, 143, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
         }
 
         .submit-btn:disabled {
-            background: #ced4da;
+            background: #FFD8B2;
             cursor: not-allowed;
             box-shadow: none;
             transform: none !important;
@@ -338,14 +339,14 @@
         .submit-btn:hover:not(:disabled) {
             background: var(--primary-light);
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(42, 157, 143, 0.4);
+            box-shadow: 0 8px 20px rgba(255, 149, 0, 0.4);
         }
 
         .submit-btn:active:not(:disabled) {
             transform: translateY(0);
         }
 
-        .success-screen {
+        .loading-screen, .success-screen {
             position: absolute;
             top: 0;
             left: 0;
@@ -365,9 +366,31 @@
             z-index: 10;
         }
 
-        .success-screen.active {
+        .loading-screen.active, .success-screen.active {
             opacity: 1;
             pointer-events: all;
+        }
+
+        .loading-icon {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #FFE0B2;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 15px;
         }
 
         .success-icon {
@@ -382,7 +405,7 @@
             animation: checkmark 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             color: white;
             font-size: 50px;
-            box-shadow: 0 10px 30px rgba(42, 157, 143, 0.3);
+            box-shadow: 0 10px 30px rgba(255, 149, 0, 0.3);
         }
 
         @keyframes checkmark {
@@ -403,37 +426,15 @@
             margin-bottom: 30px;
             max-width: 300px;
         }
-
-        .progress-bar {
-            height: 6px;
-            background: #e9ecef;
-            border-radius: 3px;
-            overflow: hidden;
-            width: 100%;
-            max-width: 200px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            width: 0;
-            transition: width 0.3s ease;
-            border-radius: 3px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <button class="back-btn" onclick="window.location.href='index.html'">В меню</button>
-            <h1>Помощь</h1>
-        </div>
-
         <div class="support-card">
             <!-- Шаг 1: Выбор темы -->
             <div class="topic-selector">
                 <div class="topic-header" id="topic-header" onclick="toggleTopics()">
-                    <span id="selected-topic-text">Выберите тему обращения</span>
+                    <span id="selected-topic-text">Тема обращения</span>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="topic-options" id="topic-options">
@@ -463,39 +464,41 @@
                     <textarea id="message" placeholder="Опишите вашу проблему максимально подробно..." 
                               maxlength="600" oninput="updateCounter()"></textarea>
                     <div class="char-counter" id="char-counter">
-                        <span>Минимум 10 символов</span>
+                        <span class="error-text">Минимум 10 символов</span>
                         <span><span id="char-count">0</span>/600</span>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Прикрепить файл (необязательно)</label>
-                    <div class="file-upload-area" id="file-upload-area" 
-                         onclick="document.getElementById('file-input').click()"
-                         ondragover="handleDragOver(event)"
-                         ondragleave="handleDragLeave(event)"
-                         ondrop="handleDrop(event)">
-                        <div class="file-upload-icon">📎</div>
-                        <div class="file-upload-text">Перетащите файл сюда или нажмите для выбора</div>
-                        <div class="file-upload-hint">Максимальный размер: 5MB</div>
-                        <input type="file" class="file-input" id="file-input" onchange="handleFileSelect()">
-                    </div>
-                    <div id="file-preview-container"></div>
+                <div class="add-files-btn" id="add-files-btn" onclick="toggleFileUpload()">Добавить файлы</div>
+
+                <div class="file-upload-area" id="file-upload-area" 
+                     onclick="document.getElementById('file-input').click()"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)">
+                    <div class="file-upload-icon">📎</div>
+                    <div class="file-upload-text">Перетащите файл сюда или нажмите для выбора</div>
+                    <div class="file-upload-hint">Максимальный размер: 5MB</div>
+                    <input type="file" class="file-input" id="file-input" onchange="handleFileSelect()">
                 </div>
+                <div id="file-preview-container"></div>
 
                 <button class="submit-btn" id="submit-btn" onclick="submitForm()" disabled>
                     Отправить обращение
                 </button>
             </div>
 
-            <!-- Шаг 3: Успешная отправка -->
+            <!-- Шаг 3: Загрузка -->
+            <div class="loading-screen" id="loading-screen">
+                <div class="loading-icon"></div>
+                <h2 class="loading-title">Отправляем обращение</h2>
+            </div>
+
+            <!-- Шаг 4: Успешная отправка -->
             <div class="success-screen" id="success-screen">
                 <div class="success-icon">✓</div>
                 <h2 class="success-title">Ваше обращение успешно отправлено!</h2>
-                <p class="success-message">Мы ответим вам в течение 24 часов</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                </div>
+                <p class="success-message">Мы ответим вам в ближайшее время</p>
             </div>
         </div>
     </div>
@@ -513,14 +516,17 @@
         const messageField = document.getElementById('message');
         const charCounter = document.getElementById('char-counter');
         const charCount = document.getElementById('char-count');
+        const addFilesBtn = document.getElementById('add-files-btn');
         const fileUploadArea = document.getElementById('file-upload-area');
         const fileInput = document.getElementById('file-input');
         const filePreviewContainer = document.getElementById('file-preview-container');
+        const loadingScreen = document.getElementById('loading-screen');
         const successScreen = document.getElementById('success-screen');
 
         // Состояние
         let selectedTopic = null;
         let selectedFile = null;
+        let filesVisible = false;
 
         // Функции
         function toggleTopics() {
@@ -536,14 +542,23 @@
             validateForm();
         }
 
+        function toggleFileUpload() {
+            filesVisible = !filesVisible;
+            fileUploadArea.classList.toggle('active', filesVisible);
+            addFilesBtn.textContent = filesVisible ? 'Скрыть файлы' : 'Добавить файлы';
+        }
+
         function updateCounter() {
             const length = messageField.value.length;
             charCount.textContent = length;
             
             if (length < 10) {
                 charCounter.classList.add('error');
+                charCounter.classList.add('visible');
             } else {
                 charCounter.classList.remove('error');
+                // Показываем счетчик только если введено больше 0 символов
+                charCounter.classList.toggle('visible', length > 0);
             }
             
             validateForm();
@@ -552,19 +567,19 @@
         function handleDragOver(e) {
             e.preventDefault();
             e.stopPropagation();
-            fileUploadArea.classList.add('active');
+            fileUploadArea.classList.add('file-drag');
         }
 
         function handleDragLeave(e) {
             e.preventDefault();
             e.stopPropagation();
-            fileUploadArea.classList.remove('active');
+            fileUploadArea.classList.remove('file-drag');
         }
 
         function handleDrop(e) {
             e.preventDefault();
             e.stopPropagation();
-            fileUploadArea.classList.remove('active');
+            fileUploadArea.classList.remove('file-drag');
             
             if (e.dataTransfer.files.length) {
                 fileInput.files = e.dataTransfer.files;
@@ -607,12 +622,16 @@
         }
 
         async function submitForm() {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = 'Отправка...';
+            // Показываем экран загрузки
+            loadingScreen.classList.add('active');
             
-            const message = `📢 Новое обращение в поддержку\n\n` +
-                           `Тема: ${selectedTopic}\n\n` +
-                           `Сообщение:\n${messageField.value}`;
+            // Получаем user_id из cookie
+            const userId = getCookie('tg_user_id');
+            const username = userId ? `Пользователь ID: ${userId}` : 'Анонимный пользователь';
+            
+            const message = `📢 *${selectedTopic}*\n\n` +
+                           `👤 *Отправитель:* ${username}\n\n` +
+                           `📝 *Содержимое:*\n${messageField.value}`;
 
             try {
                 let response;
@@ -622,6 +641,7 @@
                     formData.append('chat_id', CHAT_ID);
                     formData.append('caption', message);
                     formData.append('document', selectedFile);
+                    formData.append('parse_mode', 'Markdown');
                     
                     response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
                         method: 'POST',
@@ -633,7 +653,8 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             chat_id: CHAT_ID,
-                            text: message
+                            text: message,
+                            parse_mode: 'Markdown'
                         })
                     });
                 }
@@ -641,26 +662,20 @@
                 const result = await response.json();
                 if (!result.ok) throw new Error(result.description || 'Неизвестная ошибка');
                 
-                showSuccess();
+                // Скрываем экран загрузки и показываем успех
+                loadingScreen.classList.remove('active');
+                successScreen.classList.add('active');
             } catch (error) {
                 alert(`Ошибка при отправке: ${error.message}`);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Отправить обращение';
+                loadingScreen.classList.remove('active');
             }
         }
 
-        function showSuccess() {
-            successScreen.classList.add('active');
-            
-            // Анимация прогресс бара
-            setTimeout(() => {
-                document.getElementById('progress-fill').style.width = '100%';
-            }, 100);
-            
-            // Редирект через 3 секунды
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 3000);
+        // Вспомогательная функция для получения cookie
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
         }
 
         // Закрытие выпадающего списка при клике вне его
