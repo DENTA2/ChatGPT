@@ -53,24 +53,20 @@
             background: none;
             border: 2px solid var(--primary);
             color: var(--primary);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 500;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            font-size: 20px;
         }
 
         .back-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateX(-3px);
-        }
-
-        .back-btn::before {
-            content: "←";
+            background: rgba(255, 149, 0, 0.1);
         }
 
         .header-title {
@@ -157,9 +153,6 @@
             gap: 12px;
             border-bottom: 1px solid #FFF0E0;
             font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .topic-option:last-child {
@@ -526,15 +519,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <button class="back-btn" id="back-btn">Назад</button>
+            <button class="back-btn" id="back-btn" onclick="window.location.href='index.html'">←</button>
             <h1 class="header-title">Помощь</h1>
         </div>
 
         <div class="support-card">
             <!-- Шаг 1: Выбор темы -->
             <div class="topic-selector">
-                <div class="topic-header" id="topic-header" onclick="toggleTopics()">
-                    <span id="selected-topic-text">Тема обращения</span>
+                <div class="topic-header" id="topic-header">
+                    <span id="selected-topic-text">Выберите тему обращения</span>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="topic-options" id="topic-options">
@@ -631,6 +624,12 @@
         let selectedFile = null;
         let filesVisible = false;
         let filesUploading = [];
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Назначение обработчиков
+            topicHeader.addEventListener('click', toggleTopics);
+        });
 
         // Функции
         function toggleTopics() {
@@ -829,21 +828,6 @@
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
-
-        // Обработчик кнопки "Назад"
-        backBtn.addEventListener('click', () => {
-            if (!loadingScreen.classList.contains('active') {
-                window.history.back();
-            }
-        });
-
-        // Закрытие выпадающего списка при клике вне его
-        document.addEventListener('click', (e) => {
-            if (!topicHeader.contains(e.target) && !topicOptions.contains(e.target)) {
-                topicOptions.classList.remove('active');
-                topicHeader.classList.remove('active');
-            }
-        });
     </script>
 </body>
 </html>
