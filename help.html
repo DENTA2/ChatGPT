@@ -89,6 +89,7 @@
             backdrop-filter: blur(10px);
             margin-bottom: 30px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            position: relative;
         }
 
         .support-card:hover {
@@ -98,6 +99,7 @@
 
         .topic-selector {
             margin-bottom: 25px;
+            position: relative;
         }
 
         .topic-header {
@@ -123,17 +125,22 @@
         }
 
         .topic-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
             max-height: 0;
             overflow: hidden;
             transition: all 0.4s ease;
-            margin-top: 10px;
+            margin-top: 5px;
             background: white;
-            border-radius: 0 0 14px 14px;
+            border-radius: 14px;
             transform-origin: top;
             transform: scaleY(0);
             opacity: 0;
             border: 2px solid #e9ecef;
-            border-top: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 10;
         }
 
         .topic-options.active {
