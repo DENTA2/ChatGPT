@@ -69,8 +69,8 @@
         </div>
         <div class="price">90 ₽</div>
         
-        <!-- Кнопка оплаты (ЗАМЕНИТЕ ССЫЛКУ НА ВАШУ) -->
-        <button class="pay-button" onclick="openTinkoffPayment(https://cp.puzzlebot.top/new_order?id=b8c6d3e9fb3a0523764b7f1876af8dd3&type=tinkoff_kassa)">
+        <!-- Кнопка оплаты с вашей ссылкой от Puzzle Bot -->
+        <button class="pay-button" onclick="openTinkoffPayment()">
             Оплатить
         </button>
         
@@ -83,10 +83,10 @@
     </div>
 
     <script>
-        // Функция для открытия платежа в том же Mini App
+        // Функция для открытия платежа в Mini App
         function openTinkoffPayment() {
-            // 🔽 ЗАМЕНИТЕ ЭТУ ССЫЛКУ НА ВАШУ (от Puzzle Bot или Tinkoff API)
-            const paymentUrl = "https://securepay.tinkoff.ru/ВАША_ССЫЛКА_НА_ОПЛАТУ";
+            // 🔽 Ваша ссылка от Puzzle Bot (Tinkoff Касса)
+            const paymentUrl = "https://cp.puzzlebot.top/new_order?id=b8c6d3e9fb3a0523764b7f1876af8dd3&type=tinkoff_kassa";
 
             // Проверяем, открыто ли в Telegram Mini App
             if (window.Telegram && window.Telegram.WebApp) {
@@ -94,6 +94,8 @@
                     if (status === "paid") {
                         // Платёж успешен (можно обновить интерфейс)
                         alert("Оплата прошла успешно! Доступ открыт.");
+                        // Можно закрыть окно или перенаправить
+                        // Telegram.WebApp.close();
                     }
                 });
             } else {
