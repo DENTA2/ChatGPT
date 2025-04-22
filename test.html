@@ -6,8 +6,8 @@
     <title>Оплата курса по ИИ</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f8f8;
             margin: 0;
             padding: 0;
             display: flex;
@@ -16,91 +16,114 @@
             min-height: 100vh;
             color: #333;
         }
-        .payment-container {
+        .payment-card {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+            padding: 32px;
             width: 90%;
-            max-width: 400px;
+            max-width: 380px;
             text-align: center;
         }
         .course-title {
             font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
         .course-description {
-            color: #666;
+            color: #6B7280;
             margin-bottom: 24px;
+            line-height: 1.4;
         }
         .price {
-            font-size: 28px;
-            font-weight: bold;
-            color: #0066ff;
-            margin-bottom: 24px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #2563EB;
+            margin-bottom: 28px;
         }
         .pay-button {
-            background: #0066ff;
+            background: #2563EB;
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 12px;
+            padding: 16px 24px;
+            font-size: 17px;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            margin-bottom: 16px;
         }
         .pay-button:hover {
-            background: #0055dd;
+            background: #1D4ED8;
+            transform: translateY(-1px);
         }
-        .telegram-logo {
-            margin-top: 20px;
-            opacity: 0.6;
+        .telegram-badge {
+            display: inline-flex;
+            align-items: center;
+            color: #6B7280;
+            font-size: 14px;
+        }
+        .telegram-icon {
+            margin-right: 6px;
+            width: 18px;
+            height: 18px;
         }
     </style>
 </head>
 <body>
-    <div class="payment-container">
+    <div class="payment-card">
         <div class="course-title">Онлайн курс по ИИ</div>
         <div class="course-description">
-            Полный доступ к курсу по искусственному интеллекту с практическими заданиями.
+            Полный доступ к курсу по искусственному интеллекту с практическими заданиями и поддержкой
         </div>
         <div class="price">90 ₽</div>
         
-        <!-- Кнопка оплаты с вашей ссылкой от Puzzle Bot -->
-        <button class="pay-button" onclick="openTinkoffPayment()">
-            Оплатить
+        <button class="pay-button" onclick="openPayment()">
+            Оплатить курс
         </button>
         
-        <div class="telegram-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="telegram-badge">
+            <svg class="telegram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
                 <path d="M8 13L11 16L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
+            Оплата через Telegram
         </div>
     </div>
 
     <script>
-        // Функция для открытия платежа в Mini App
-        function openTinkoffPayment() {
-            // 🔽 Ваша ссылка от Puzzle Bot (Tinkoff Касса)
+        function openPayment() {
+            // Ваша ссылка на оплату Tinkoff от PuzzleBot
             const paymentUrl = "https://cp.puzzlebot.top/new_order?id=b8c6d3e9fb3a0523764b7f1876af8dd3&type=tinkoff_kassa";
-
-            // Проверяем, открыто ли в Telegram Mini App
+            
+            // Добавляем параметр для возврата после оплаты
+            const returnUrl = encodeURIComponent("https://t.me/your_bot?start=payment_success");
+            const fullPaymentUrl = `${paymentUrl}&SuccessURL=${returnUrl}`;
+            
+            // Открываем в Telegram WebApp или в новом окне
             if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.openInvoice(paymentUrl, function(status) {
-                    if (status === "paid") {
-                        // Платёж успешен (можно обновить интерфейс)
-                        alert("Оплата прошла успешно! Доступ открыт.");
-                        // Можно закрыть окно или перенаправить
-                        // Telegram.WebApp.close();
+                // Открываем во встроенном браузере Telegram
+                Telegram.WebApp.openLink(fullPaymentUrl);
+                
+                // Можно добавить обработчик закрытия окна
+                Telegram.WebApp.onEvent('viewportChanged', (e) => {
+                    if (!e.isStateStable) {
+                        // Проверяем, вернулся ли пользователь после оплаты
+                        // Здесь можно добавить проверку статуса платежа
                     }
                 });
             } else {
-                // Если открыто в браузере (для теста)
-                window.open(paymentUrl, "_blank");
+                // Для теста в обычном браузере
+                window.open(fullPaymentUrl, "_blank");
+            }
+        }
+        
+        // Проверяем параметры URL на возврат после оплаты
+        if (window.location.search.includes('payment_success')) {
+            alert('Оплата прошла успешно! Доступ открыт.');
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.close();
             }
         }
     </script>
